@@ -19,7 +19,7 @@ local function refreshObjective()
  local step=p:GetAttribute("TutorialStep")or 1
  local messages={
   [1]="1 • OUVRE TON FESTIVAL avec le gros bouton violet",
-  [2]="2 • ACHÈTE UNE SCÈNE dans AMÉLIORATIONS",
+  [2]="2 • ACHÈTE UNE SCÈNE dans CONSTRUIRE",
   [3]="3 • ACHÈTE DU PUBLIC pour faire venir plus de monde",
   [4]="SUPER ! • Maintenant, agrandis ton festival comme tu veux"
  }
@@ -117,6 +117,20 @@ local function refreshEvent()
  if active then objective.Text="TON FESTIVAL EST OUVERT ! • Regarde les visiteurs arriver • DJ = bonus facultatif" end
 end
 for _,a in ipairs({"EventActive","EventHype","EventTime","EventVisitors"})do p:GetAttributeChangedSignal(a):Connect(refreshEvent)end;refreshEvent()
+local wasEventActive=p:GetAttribute("EventActive")==true
+p:GetAttributeChangedSignal("EventActive"):Connect(function()
+ local active=p:GetAttribute("EventActive")==true
+ if wasEventActive and not active then
+  local card=Instance.new("Frame");card.Size=UDim2.fromOffset(390,150);card.Position=UDim2.new(.5,-195,.5,-75);card.BackgroundColor3=Color3.fromRGB(15,19,28);card.Parent=gui;corner(card,18);stroke(card)
+  local big=Instance.new("TextLabel");big.Size=UDim2.new(1,-24,0,52);big.Position=UDim2.fromOffset(12,12);big.BackgroundTransparency=1;big.Text="FESTIVAL TERMINÉ !";big.TextColor3=Color3.new(1,1,1);big.Font=Enum.Font.GothamBlack;big.TextSize=23;big.Parent=card
+  local reward=Instance.new("TextLabel");reward.Size=UDim2.new(1,-24,0,42);reward.Position=UDim2.fromOffset(12,62);reward.BackgroundTransparency=1;reward.Text="+ $"..tostring(p:GetAttribute("LastEventPayout")or 0).."   •   +"..tostring(p:GetAttribute("LastEventFans")or 0).." FANS";reward.TextColor3=Color3.fromRGB(105,225,155);reward.Font=Enum.Font.GothamBold;reward.TextSize=20;reward.Parent=card
+  local hint=Instance.new("TextLabel");hint.Size=UDim2.new(1,-24,0,28);hint.Position=UDim2.fromOffset(12,108);hint.BackgroundTransparency=1;hint.Text="CONSTRUIS → puis ouvre un festival encore plus gros !";hint.TextColor3=Color3.fromRGB(210,215,225);hint.Font=Enum.Font.GothamBold;hint.TextSize=13;hint.Parent=card
+  card.BackgroundTransparency=1;big.TextTransparency=1;reward.TextTransparency=1;hint.TextTransparency=1
+  TweenService:Create(card,TweenInfo.new(.2),{BackgroundTransparency=.04}):Play();TweenService:Create(big,TweenInfo.new(.2),{TextTransparency=0}):Play();TweenService:Create(reward,TweenInfo.new(.2),{TextTransparency=0}):Play();TweenService:Create(hint,TweenInfo.new(.2),{TextTransparency=0}):Play()
+  task.delay(3.8,function()if card.Parent then TweenService:Create(card,TweenInfo.new(.25),{BackgroundTransparency=1}):Play();task.wait(.3);card:Destroy()end end)
+ end
+ wasEventActive=active
+end)
 rebirthButton.MouseButton1Click:Connect(function()
  local prestige=p:GetAttribute("Prestige")or 0;local price=250000*((prestige+1)^2)
  if (p:GetAttribute("Cash")or 0)>=price then upgradeRemote:FireServer("REBIRTH") else objective.Text="RENAISSANCE • Il faut $"..price end
