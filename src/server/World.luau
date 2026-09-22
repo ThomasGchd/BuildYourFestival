@@ -29,10 +29,10 @@ local function truss(parent,pos,height)
 end
 function M.build(Config)
  local old=workspace:FindFirstChild("FestivalWorld");if old then old:Destroy() end
- Lighting.ClockTime=20.15;Lighting.Brightness=2.7;Lighting.ExposureCompensation=.5;Lighting.Ambient=Color3.fromRGB(105,115,145);Lighting.OutdoorAmbient=Color3.fromRGB(125,135,165);Lighting.EnvironmentDiffuseScale=.7;Lighting.EnvironmentSpecularScale=.8
+ Lighting.ClockTime=19.55;Lighting.Brightness=3.1;Lighting.ExposureCompensation=.65;Lighting.Ambient=Color3.fromRGB(105,115,145);Lighting.OutdoorAmbient=Color3.fromRGB(125,135,165);Lighting.EnvironmentDiffuseScale=.7;Lighting.EnvironmentSpecularScale=.8
  local sky=Lighting:FindFirstChild("FestivalSky") or Instance.new("Sky");sky.Name="FestivalSky";sky.CelestialBodiesShown=true;sky.StarCount=3000;sky.SunAngularSize=14;sky.MoonAngularSize=10;sky.Parent=Lighting
  pcall(function() local clouds=workspace.Terrain:FindFirstChild("FestivalClouds") or Instance.new("Clouds");clouds.Name="FestivalClouds";clouds.Cover=.32;clouds.Density=.38;clouds.Color=Color3.fromRGB(225,215,235);clouds.Parent=workspace.Terrain end)
- local bloom=Lighting:FindFirstChild("FestivalBloom") or Instance.new("BloomEffect");bloom.Name="FestivalBloom";bloom.Intensity=.12;bloom.Size=12;bloom.Threshold=2.1;bloom.Parent=Lighting
+ local bloom=Lighting:FindFirstChild("FestivalBloom") or Instance.new("BloomEffect");bloom.Name="FestivalBloom";bloom.Intensity=.08;bloom.Size=10;bloom.Threshold=2.25;bloom.Parent=Lighting
  local cc=Lighting:FindFirstChild("FestivalColor") or Instance.new("ColorCorrectionEffect");cc.Name="FestivalColor";cc.Brightness=.04;cc.Contrast=.08;cc.Saturation=-.02;cc.TintColor=Color3.fromRGB(220,230,255);cc.Parent=Lighting
  local rays=Lighting:FindFirstChild("FestivalRays") or Instance.new("SunRaysEffect");rays.Name="FestivalRays";rays.Intensity=.025;rays.Spread=.65;rays.Parent=Lighting
  local atmosphere=Lighting:FindFirstChild("FestivalAtmosphere") or Instance.new("Atmosphere");atmosphere.Name="FestivalAtmosphere";atmosphere.Density=.10;atmosphere.Haze=.22;atmosphere.Glare=.04;atmosphere.Color=Color3.fromRGB(175,195,235);atmosphere.Decay=Color3.fromRGB(70,85,125);atmosphere.Parent=Lighting
@@ -61,6 +61,14 @@ function M.build(Config)
  for _,x in ipairs({-43,43}) do truss(root,Vector3.new(x,0,250),32) end
  part(root,"EntranceTop",Vector3.new(88,3,3),CFrame.new(0,31,250),Color3.fromRGB(35,37,43),Enum.Material.Metal)
  textSign(root,Vector3.new(0,25,248.3),Vector3.new(65,10,1),"BUILD YOUR FESTIVAL")
+ -- Spawn plaza: immediate premium festival framing and a clear sightline to the Mainstage.
+ part(root,"SpawnPlaza",Vector3.new(150,.35,72),CFrame.new(0,.2,265),Color3.fromRGB(43,45,52),Enum.Material.Slate)
+ for _,x in ipairs({-62,62})do
+  part(root,"WelcomeTower",Vector3.new(5,28,5),CFrame.new(x,14,262),Color3.fromRGB(31,33,39),Enum.Material.Metal)
+  local cap=part(root,"WelcomeLight",Vector3.new(7,1,7),CFrame.new(x,28,262),Color3.fromRGB(125,105,235),Enum.Material.SmoothPlastic)
+  local l=Instance.new("PointLight");l.Range=24;l.Brightness=.45;l.Color=Color3.fromRGB(155,145,255);l.Parent=cap
+ end
+ textSign(root,Vector3.new(0,7,231),Vector3.new(48,6,.7),"TON FESTIVAL COMMENCE ICI")
  -- layered 3D festival perimeter: hills, trees and skyline silhouettes
  local scenery=Instance.new("Folder");scenery.Name="Scenery";scenery.Parent=root
  for i=1,24 do
