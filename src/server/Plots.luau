@@ -23,6 +23,10 @@ local function buildStage(plot,player)
   local light=Instance.new("PointLight");light.Brightness=.6;light.Range=18;light.Color=s.accent;light.Parent=monument
  end
  part(f,"Stage",Vector3.new(48+math.min(stage,20)*3,2,30+tier*4),pos+Vector3.new(0,1,-30),s.main)
+ -- architectural depth: apron, stairs and side wings
+ part(f,"StageApron",Vector3.new(34+math.min(stage,15)*2,1.2,8),pos+Vector3.new(0,1.6,-10),Color3.fromRGB(30,32,38),Enum.Material.Metal)
+ for n=1,3 do part(f,"Step",Vector3.new(18+n*5,.65,3),pos+Vector3.new(0,.35+n*.32,-5-n*2.6),Color3.fromRGB(50,52,59),Enum.Material.Metal)end
+ if stage>=3 then for _,x in ipairs({-1,1})do part(f,"Wing",Vector3.new(10+tier*2,10+tier*2,18),pos+Vector3.new(x*(31+tier*4),5+tier,-31),s.main,Enum.Material.Metal)end end
  part(f,"LED",Vector3.new(34+math.min(stage,20)*2.4,10+math.min(stage,15),1),pos+Vector3.new(0,10+math.min(stage,15)*.45,-45),s.accent,Enum.Material.Neon)
  local booth=part(f,"DJBooth",Vector3.new(14+tier*2,4,5),pos+Vector3.new(0,4,-20),Color3.fromRGB(20,21,26))
  -- Playable deck: simple performance controls directly on the personal stage.
@@ -36,12 +40,23 @@ local function buildStage(plot,player)
   deckPrompt.ObjectText="PLATINES DJ • COMBO x"..combo
   task.delay(4,function()if pp.Parent then pp:SetAttribute("DJCombo",0);if deckPrompt.Parent then deckPrompt.ObjectText="PLATINES DJ" end end end)
  end)
- if stage>=5 then part(f,"Roof",Vector3.new(78+tier*6,3,34),pos+Vector3.new(0,27+tier,-31),Color3.fromRGB(23,24,29))end
+ if stage>=5 then
+  part(f,"Roof",Vector3.new(78+tier*6,3,34),pos+Vector3.new(0,27+tier,-31),Color3.fromRGB(23,24,29))
+  for _,x in ipairs({-34-tier*2,34+tier*2})do for _,z in ipairs({-43,-20})do part(f,"StageTruss",Vector3.new(2,26+tier,2),pos+Vector3.new(x,13+tier*.5,z),Color3.fromRGB(75,78,84),Enum.Material.DiamondPlate)end end
+ end
  if stage>=10 then for _,x in ipairs({-44,44})do part(f,"Tower",Vector3.new(4,28+tier*3,4),pos+Vector3.new(x,14,-31),Color3.fromRGB(28,30,35),Enum.Material.DiamondPlate)end end
  if stage>=20 then part(f,"Crown",Vector3.new(100,4,5),pos+Vector3.new(0,36,-33),s.accent,Enum.Material.Neon)end
  for i=1,math.min(sound,8)do local side=i%2==0 and 1 or -1;local row=math.ceil(i/2);part(f,"Speaker",Vector3.new(6,10,5),pos+Vector3.new(side*(38+row*5),5,-18),Color3.fromRGB(12,13,16))end
  for i=1,math.min(lights,12)do local x=-44+(i-1)*(88/11);local l=part(f,"Fixture",Vector3.new(1.5,1.5,1.5),pos+Vector3.new(x,22+(i%2)*4,-25),s.secondary,Enum.Material.SmoothPlastic);local sp=Instance.new("SpotLight");sp.Range=35+lights;sp.Angle=30;sp.Brightness=math.min(1.8,0.45+lights*.04);sp.Color=s.secondary;sp.Face=Enum.NormalId.Front;sp.Parent=l end
  for i=1,math.min(fx,8)do local x=-35+(i-1)*10;local h=part(f,"Laser",Vector3.new(.8,.8,.8),pos+Vector3.new(x,24,-20),s.accent,Enum.Material.Neon);local a=Instance.new("Attachment");a.Parent=h;local t=part(f,"LaserTarget",Vector3.new(.1,.1,.1),pos+Vector3.new(x*1.4,2,25+(i%3)*8),s.accent);t.Transparency=1;t.CanCollide=false;local b=Instance.new("Attachment");b.Parent=t;local beam=Instance.new("Beam");beam.Attachment0=a;beam.Attachment1=b;beam.Width0=.15;beam.Width1=.03;beam.Color=ColorSequence.new(s.accent);beam.LightEmission=1;beam.FaceCamera=true;beam.Parent=h end
+ -- perimeter dressing makes a developed slot feel like a real mini-festival
+ if stage>=2 then
+  for _,x in ipairs({-78,78})do for z=-42,35,14 do part(f,"Fence",Vector3.new(1.2,3,11),pos+Vector3.new(x,1.5,z),Color3.fromRGB(90,93,100),Enum.Material.Metal)end end
+ end
+ if crowd>=5 then
+  part(f,"EntryArch",Vector3.new(65,2,2),pos+Vector3.new(0,12,50),s.accent,Enum.Material.Neon)
+  for _,x in ipairs({-31,31})do part(f,"EntryPost",Vector3.new(2,12,2),pos+Vector3.new(x,6,50),Color3.fromRGB(45,47,54),Enum.Material.Metal)end
+ end
  if branchLevel(player,"Marketing")>=5 then part(f,"FestivalBanner",Vector3.new(50,8,1),pos+Vector3.new(0,8,47),s.secondary,Enum.Material.Neon) end
  if branchLevel(player,"Staff")>=5 then
   for _,x in ipairs({-72,72})do part(f,"StaffTent",Vector3.new(16,7,12),pos+Vector3.new(x,3.5,-3),Color3.fromRGB(35,38,45),Enum.Material.Fabric)end
