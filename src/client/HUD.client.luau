@@ -21,7 +21,7 @@ local function refreshObjective()
   [1]="1 • OUVRE TON FESTIVAL avec le gros bouton violet",
   [2]="2 • ACHÈTE UNE SCÈNE dans CONSTRUIRE",
   [3]="3 • ACHÈTE DU PUBLIC pour faire venir plus de monde",
-  [4]="SUPER ! • Maintenant, agrandis ton festival comme tu veux"
+  [4]="4 • OUVRE TON FESTIVAL UNE 2e FOIS et regarde la différence !"
  }
  objective.Text=messages[step]or messages[5]
  objective.Visible=step<=4
@@ -159,7 +159,7 @@ local function openUpgrades()
    if lv>=branchMax[key] then b.Text=branchNames[key].."\nNIVEAU "..lv.." • MAX"
    else b.Text=branchNames[key].."  •  NIV. "..lv.."\n"..branchEffect[key].."\nACHETER  $"..upgradeCost(key,lv) end
   end
-  redraw();p:GetAttributeChangedSignal(key.."Level"):Connect(redraw);b.MouseButton1Click:Connect(function()upgradeRemote:FireServer("BUY",key)end)
+  redraw();p:GetAttributeChangedSignal(key.."Level"):Connect(redraw);b.MouseButton1Click:Connect(function()if p:GetAttribute("EventActive")then objective.Text="LE FESTIVAL EST OUVERT • Construis après le show !" else upgradeRemote:FireServer("BUY",key)end end)
  end
 end
 upgradesButton.MouseButton1Click:Connect(openUpgrades)
