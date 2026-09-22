@@ -3,7 +3,11 @@ local M={};local owners={}
 local styles={
  Mainstage={label="MAIN STAGE",main=Color3.fromRGB(31,34,42),accent=Color3.fromRGB(116,88,235),secondary=Color3.fromRGB(55,205,225)},
  Cave={label="CAVE",main=Color3.fromRGB(20,22,25),accent=Color3.fromRGB(220,55,48),secondary=Color3.fromRGB(245,135,55)},
- Boiler={label="BOILER",main=Color3.fromRGB(38,39,43),accent=Color3.fromRGB(235,185,65),secondary=Color3.fromRGB(220,75,65)}
+ Boiler={label="BOILER",main=Color3.fromRGB(38,39,43),accent=Color3.fromRGB(235,185,65),secondary=Color3.fromRGB(220,75,65)},
+ Warehouse={label="WAREHOUSE",main=Color3.fromRGB(31,33,36),accent=Color3.fromRGB(210,220,225),secondary=Color3.fromRGB(95,150,255)},
+ OpenAir={label="OPEN AIR",main=Color3.fromRGB(46,50,45),accent=Color3.fromRGB(255,174,62),secondary=Color3.fromRGB(105,215,160)},
+ Hard={label="HARD STAGE",main=Color3.fromRGB(24,25,29),accent=Color3.fromRGB(235,45,58),secondary=Color3.fromRGB(245,245,245)},
+ Beach={label="BEACH",main=Color3.fromRGB(54,65,67),accent=Color3.fromRGB(50,205,220),secondary=Color3.fromRGB(255,190,80)}
 }
 local function getPlot(world,i)return world.plots:FindFirstChild("Plot"..i)end
 local function part(parent,name,size,pos,color,material)
@@ -131,6 +135,37 @@ local function buildStage(plot,player)
    part(f,"BoilerTruss",Vector3.new(70,3,3),pos+Vector3.new(0,20,-25),Color3.fromRGB(73,75,80),Enum.Material.DiamondPlate)
   end
   if stage>=7 then sign("360° BOOTH",Vector3.new(0,9,-37),Vector3.new(24,3,.6))end
+ elseif styleKey=="Warehouse" then
+  if stage>=1 then
+   part(f,"WarehouseBack",Vector3.new(76,22,3),pos+Vector3.new(0,11,-43),Color3.fromRGB(42,43,46),Enum.Material.Brick)
+   for _,x in ipairs({-38,38})do part(f,"WarehouseWall",Vector3.new(3,22,38),pos+Vector3.new(x,11,-27),Color3.fromRGB(45,46,49),Enum.Material.Brick)end
+  end
+  if stage>=4 then
+   for x=-30,30,15 do part(f,"WarehouseRafter",Vector3.new(2,2,38),pos+Vector3.new(x,21,-27),Color3.fromRGB(78,80,84),Enum.Material.Metal)end
+   part(f,"WarehouseRoof",Vector3.new(80,3,40),pos+Vector3.new(0,23,-27),Color3.fromRGB(28,29,32),Enum.Material.Metal)
+  end
+  if stage>=7 then sign("WAREHOUSE",Vector3.new(0,14,-41),Vector3.new(28,4,.6))end
+ elseif styleKey=="OpenAir" then
+  if stage>=1 then for _,x in ipairs({-32,32})do part(f,"OpenMast",Vector3.new(2,20,2),pos+Vector3.new(x,10,-29),Color3.fromRGB(95,98,94),Enum.Material.Metal)end end
+  if stage>=4 then
+   local canopy=part(f,"OpenCanopy",Vector3.new(72,2,30),pos+Vector3.new(0,24,-29),Color3.fromRGB(72,76,69),Enum.Material.Fabric);canopy.Transparency=.08
+   for _,x in ipairs({-42,42})do for _,z in ipairs({-40,-18})do part(f,"OpenPole",Vector3.new(1.2,24,1.2),pos+Vector3.new(x,12,z),Color3.fromRGB(80,83,78),Enum.Material.Metal)end end
+  end
+  if stage>=7 then for _,x in ipairs({-48,48})do part(f,"OpenBanner",Vector3.new(8,18,.4),pos+Vector3.new(x,11,-25),x<0 and s.accent or s.secondary,Enum.Material.Fabric)end end
+ elseif styleKey=="Hard" then
+  if stage>=1 then for _,x in ipairs({-31,31})do part(f,"HardPillar",Vector3.new(9,20,12),pos+Vector3.new(x,10,-34),Color3.fromRGB(25,26,30),Enum.Material.Concrete)end end
+  if stage>=4 then
+   for _,x in ipairs({-42,-22,22,42})do local blade=part(f,"HardBlade",Vector3.new(7,30,5),pos+Vector3.new(x,17,-38),Color3.fromRGB(32,33,38),Enum.Material.Metal);blade.Orientation=Vector3.new(0,0,x<0 and -12 or 12)end
+   part(f,"HardHeader",Vector3.new(88,7,6),pos+Vector3.new(0,31,-38),Color3.fromRGB(20,21,25),Enum.Material.Metal)
+  end
+  if stage>=7 then sign("HARD STAGE",Vector3.new(0,24,-34),Vector3.new(32,5,.8))end
+ elseif styleKey=="Beach" then
+  if stage>=1 then
+   local sand=part(f,"BeachDeck",Vector3.new(105,.3,62),pos+Vector3.new(0,.72,8),Color3.fromRGB(194,165,112),Enum.Material.Sand);sand.CanCollide=false
+   for _,x in ipairs({-34,34})do part(f,"PalmPole",Vector3.new(2,16,2),pos+Vector3.new(x,8,-24),Color3.fromRGB(104,73,47),Enum.Material.Wood)end
+  end
+  if stage>=4 then part(f,"BeachCanopy",Vector3.new(66,2,28),pos+Vector3.new(0,22,-29),Color3.fromRGB(235,226,194),Enum.Material.Fabric)end
+  if stage>=7 then for _,x in ipairs({-45,45})do part(f,"BeachSail",Vector3.new(10,14,.5),pos+Vector3.new(x,9,-18),x<0 and s.accent or s.secondary,Enum.Material.Fabric)end end
  end
 
  -- Sound grows from tiny pole speakers into a proper festival PA.
