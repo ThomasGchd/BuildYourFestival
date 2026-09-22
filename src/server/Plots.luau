@@ -19,7 +19,18 @@ local function buildStage(plot,player)
  local tier=math.floor(stage/5)
  part(f,"Stage",Vector3.new(48+math.min(stage,20)*3,2,30+tier*4),pos+Vector3.new(0,1,-30),s.main)
  part(f,"LED",Vector3.new(34+math.min(stage,20)*2.4,10+math.min(stage,15),1),pos+Vector3.new(0,10+math.min(stage,15)*.45,-45),s.accent,Enum.Material.Neon)
- part(f,"DJBooth",Vector3.new(14+tier*2,4,5),pos+Vector3.new(0,4,-20),Color3.fromRGB(20,21,26))
+ local booth=part(f,"DJBooth",Vector3.new(14+tier*2,4,5),pos+Vector3.new(0,4,-20),Color3.fromRGB(20,21,26))
+ -- Playable deck: simple performance controls directly on the personal stage.
+ local deck=part(f,"DJDeck",Vector3.new(10,1,3.5),pos+Vector3.new(0,6.2,-18.8),Color3.fromRGB(10,11,14),Enum.Material.SmoothPlastic)
+ for _,x in ipairs({-3.2,3.2})do local jog=part(f,"JogWheel",Vector3.new(2.4,.35,2.4),pos+Vector3.new(x,6.85,-18.8),Color3.fromRGB(55,58,65),Enum.Material.Metal);jog.Shape=Enum.PartType.Cylinder;jog.Orientation=Vector3.new(0,0,90)end
+ local deckPrompt=Instance.new("ProximityPrompt");deckPrompt.ActionText="MIXER";deckPrompt.ObjectText="PLATINES DJ";deckPrompt.RequiresLineOfSight=false;deckPrompt.MaxActivationDistance=10;deckPrompt.Parent=deck
+ deckPrompt.Triggered:Connect(function(pp)
+  if pp~=player then return end
+  local combo=(pp:GetAttribute("DJCombo")or 0)+1;pp:SetAttribute("DJCombo",combo)
+  pp:SetAttribute("Cash",(pp:GetAttribute("Cash")or 0)+20+combo*3);pp:SetAttribute("Fans",(pp:GetAttribute("Fans")or 0)+5+math.floor(combo/3))
+  deckPrompt.ObjectText="PLATINES DJ • COMBO x"..combo
+  task.delay(4,function()if pp.Parent then pp:SetAttribute("DJCombo",0);if deckPrompt.Parent then deckPrompt.ObjectText="PLATINES DJ" end end end)
+ end)
  if stage>=5 then part(f,"Roof",Vector3.new(78+tier*6,3,34),pos+Vector3.new(0,27+tier,-31),Color3.fromRGB(23,24,29))end
  if stage>=10 then for _,x in ipairs({-44,44})do part(f,"Tower",Vector3.new(4,28+tier*3,4),pos+Vector3.new(x,14,-31),Color3.fromRGB(28,30,35),Enum.Material.DiamondPlate)end end
  if stage>=20 then part(f,"Crown",Vector3.new(100,4,5),pos+Vector3.new(0,36,-33),s.accent,Enum.Material.Neon)end
@@ -38,7 +49,7 @@ end
 function M.assign(player,world,Config)
  if player:GetAttribute("PlotIndex")then return end
  for i=1,Config.PlotCount do if not owners[i]then
-  owners[i]=player;player:SetAttribute("PlotIndex",i);player:SetAttribute("Cash",Config.StartCash);player:SetAttribute("Fans",0);player:SetAttribute("StageStyle","Neon");player:SetAttribute("Prestige",0)
+  owners[i]=player;player:SetAttribute("PlotIndex",i);player:SetAttribute("Cash",Config.StartCash);player:SetAttribute("Fans",0);player:SetAttribute("StageStyle","Neon");player:SetAttribute("Prestige",0);player:SetAttribute("RebirthTokens",0);player:SetAttribute("DJCombo",0)
   for key in pairs(Config.Branches)do player:SetAttribute(key.."Level",0)end
   local plot=getPlot(world,i);plot.OwnerSign.OwnerGui.Text.Text=player.DisplayName.." • FESTIVAL";buildStage(plot,player)
   local order={"Stage","Sound","Lights","FX","Crowd","Stands","Marketing","Staff"}
@@ -58,8 +69,8 @@ function M.assign(player,world,Config)
   mp.Triggered:Connect(function(pp)if pp==player then mi=mi%#Config.Music+1;playMusic()end end);playMusic()
   local prestigePad,prestigePrompt=pad(plot,"PrestigePad",Vector3.new(55,.55,-2),Color3.fromRGB(245,190,55),function(pp)
    if pp~=player then return end;local prestige=pp:GetAttribute("Prestige")or 0;local price=Config.PrestigeBaseCost*(prestige+1)^2;if (pp:GetAttribute("Cash")or 0)<price then return end
-   pp:SetAttribute("Cash",Config.StartCash);pp:SetAttribute("Prestige",prestige+1);for key in pairs(Config.Branches)do pp:SetAttribute(key.."Level",0)end;buildStage(plot,pp)
-  end);prestigePrompt.ActionText="NOUVELLE SAISON";prestigePrompt.ObjectText="PRESTIGE"
+   pp:SetAttribute("Cash",Config.StartCash);pp:SetAttribute("Prestige",prestige+1);pp:SetAttribute("RebirthTokens",(pp:GetAttribute("RebirthTokens")or 0)+1+math.floor(prestige/3));for key in pairs(Config.Branches)do pp:SetAttribute(key.."Level",0)end;buildStage(plot,pp)
+  end);prestigePrompt.ActionText="RENAISSANCE";prestigePrompt.ObjectText="NOUVELLE SAISON • BONUS PERMANENT"
   break
  end end
 end
@@ -67,7 +78,7 @@ function M.start(world,Config)
  Players.PlayerRemoving:Connect(function(p)local i=p:GetAttribute("PlotIndex");if i then owners[i]=nil;local plot=getPlot(world,i);if plot then plot.OwnerSign.OwnerGui.Text.Text="SLOT LIBRE";for _,x in plot:GetChildren()do if x.Name~="Floor" and x.Name~="Trim" and x.Name~="OwnerSign" then x:Destroy()end end end end end)
  task.spawn(function()while task.wait(2)do for _,p in Players:GetPlayers()do
   local prestige=p:GetAttribute("Prestige")or 0;local stage=branchLevel(p,"Stage");local sound=branchLevel(p,"Sound");local crowd=branchLevel(p,"Crowd");local stands=branchLevel(p,"Stands");local marketing=branchLevel(p,"Marketing");local staff=branchLevel(p,"Staff")
-  local income=10+stage*8+sound*5+crowd*6+stands*14+marketing*10+staff*8;income=math.floor(income*(1+prestige*.25))
+  local income=10+stage*8+sound*5+crowd*6+stands*14+marketing*10+staff*8;income=math.floor(income*(1+prestige*.25+(p:GetAttribute("RebirthTokens")or 0)*.05))
   p:SetAttribute("Cash",(p:GetAttribute("Cash")or 0)+income);p:SetAttribute("Fans",(p:GetAttribute("Fans")or 0)+math.max(1,crowd+math.floor(marketing*.7)+prestige*3))
  end end end)
 end
