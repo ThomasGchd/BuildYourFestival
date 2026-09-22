@@ -31,14 +31,14 @@ function M.build(Config)
  local old=workspace:FindFirstChild("FestivalWorld");if old then old:Destroy() end
  Lighting.ClockTime=18.65;Lighting.Brightness=2.25;Lighting.Ambient=Color3.fromRGB(72,78,105);Lighting.OutdoorAmbient=Color3.fromRGB(105,110,140);Lighting.EnvironmentDiffuseScale=.45;Lighting.EnvironmentSpecularScale=.8
  local sky=Lighting:FindFirstChild("FestivalSky") or Instance.new("Sky");sky.Name="FestivalSky";sky.CelestialBodiesShown=true;sky.StarCount=3000;sky.SunAngularSize=14;sky.MoonAngularSize=10;sky.Parent=Lighting
- local clouds=workspace.Terrain:FindFirstChild("FestivalClouds") or Instance.new("Clouds");clouds.Name="FestivalClouds";clouds.Cover=.32;clouds.Density=.38;clouds.Color=Color3.fromRGB(225,215,235);clouds.Parent=workspace.Terrain
+ pcall(function() local clouds=workspace.Terrain:FindFirstChild("FestivalClouds") or Instance.new("Clouds");clouds.Name="FestivalClouds";clouds.Cover=.32;clouds.Density=.38;clouds.Color=Color3.fromRGB(225,215,235);clouds.Parent=workspace.Terrain end)
  local bloom=Lighting:FindFirstChild("FestivalBloom") or Instance.new("BloomEffect");bloom.Name="FestivalBloom";bloom.Intensity=.28;bloom.Size=18;bloom.Threshold=1.65;bloom.Parent=Lighting
  local cc=Lighting:FindFirstChild("FestivalColor") or Instance.new("ColorCorrectionEffect");cc.Name="FestivalColor";cc.Brightness=.015;cc.Contrast=.08;cc.Saturation=.08;cc.TintColor=Color3.fromRGB(235,240,255);cc.Parent=Lighting
  local rays=Lighting:FindFirstChild("FestivalRays") or Instance.new("SunRaysEffect");rays.Name="FestivalRays";rays.Intensity=.025;rays.Spread=.65;rays.Parent=Lighting
  local atmosphere=Lighting:FindFirstChild("FestivalAtmosphere") or Instance.new("Atmosphere");atmosphere.Name="FestivalAtmosphere";atmosphere.Density=.22;atmosphere.Haze=1.05;atmosphere.Glare=.12;atmosphere.Color=Color3.fromRGB(190,205,255);atmosphere.Decay=Color3.fromRGB(255,150,115);atmosphere.Parent=Lighting
  local root=Instance.new("Folder");root.Name="FestivalWorld";root.Parent=workspace
  -- Remove the default Roblox baseplate/spawn so nothing shows through our floor.
- local baseplate=workspace:FindFirstChild("Baseplate");if baseplate then baseplate:Destroy() end
+ -- Keep any Studio baseplate untouched; FestivalWorld fully covers its playable area.
  for _,v in workspace:GetChildren() do if v:IsA("SpawnLocation") and v.Parent~=root then v:Destroy() end end
  part(root,"Ground",Vector3.new(900,2,900),CFrame.new(0,-1.5,-100),Color3.fromRGB(42,86,48),Enum.Material.SmoothPlastic)
  part(root,"Festival Avenue",Vector3.new(82,1,650),CFrame.new(0,0,-70),Color3.fromRGB(57,58,65),Enum.Material.SmoothPlastic)
@@ -67,7 +67,7 @@ function M.build(Config)
   local side=i%2==0 and 1 or -1;local z=300-((i-1)%12)*65;local x=side*(330+((i*29)%80))
   local hill=part(scenery,"Hill",Vector3.new(150,55+((i*17)%55),105),CFrame.new(x,-8,z)*CFrame.Angles(0,math.rad((i*31)%90),math.rad(side*5)),Color3.fromRGB(37,72,48),Enum.Material.Grass);hill.Shape=Enum.PartType.Ball
  end
- for z=-360,270,35 do for _,x in ipairs({-300,-275,275,300})do if ((z+x)%70)==0 then tree(scenery,Vector3.new(x,0,z))end end end
+ for z=-360,270,55 do tree(scenery,Vector3.new(-300,0,z));tree(scenery,Vector3.new(300,0,z+22)) end
  -- avenue dressing
  for z=-310,210,52 do
   lamp(root,Vector3.new(-49,0,z));lamp(root,Vector3.new(49,0,z))
