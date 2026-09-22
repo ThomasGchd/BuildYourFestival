@@ -27,7 +27,9 @@ local function buildStage(plot,player)
  part(f,"StageApron",Vector3.new(34+math.min(stage,15)*2,1.2,8),pos+Vector3.new(0,1.6,-10),Color3.fromRGB(30,32,38),Enum.Material.Metal)
  for n=1,3 do part(f,"Step",Vector3.new(18+n*5,.65,3),pos+Vector3.new(0,.35+n*.32,-5-n*2.6),Color3.fromRGB(50,52,59),Enum.Material.Metal)end
  if stage>=3 then for _,x in ipairs({-1,1})do part(f,"Wing",Vector3.new(10+tier*2,10+tier*2,18),pos+Vector3.new(x*(31+tier*4),5+tier,-31),s.main,Enum.Material.Metal)end end
- part(f,"LED",Vector3.new(34+math.min(stage,20)*2.4,10+math.min(stage,15),1),pos+Vector3.new(0,10+math.min(stage,15)*.45,-45),s.accent,Enum.Material.Neon)
+ local ledFrame=part(f,"LEDFrame",Vector3.new(42+math.min(stage,20)*2.4,15+math.min(stage,15),2),pos+Vector3.new(0,10+math.min(stage,15)*.45,-45),Color3.fromRGB(17,19,25),Enum.Material.Metal)
+ local led=part(f,"LED",Vector3.new(36+math.min(stage,20)*2.2,10+math.min(stage,12)*.65,.55),pos+Vector3.new(0,10+math.min(stage,12)*.35,-43.9),Color3.fromRGB(35,75,105),Enum.Material.SmoothPlastic)
+ for x=-1,1,2 do part(f,"LEDStrip",Vector3.new(.7,12+math.min(stage,10),1),pos+Vector3.new(x*(22+math.min(stage,15)*1.1),10,-43.5),s.accent,Enum.Material.Neon)end
  local booth=part(f,"DJBooth",Vector3.new(14+tier*2,4,5),pos+Vector3.new(0,4,-20),Color3.fromRGB(20,21,26))
  -- Playable deck: simple performance controls directly on the personal stage.
  local deck=part(f,"DJDeck",Vector3.new(10,1,3.5),pos+Vector3.new(0,6.2,-18.8),Color3.fromRGB(10,11,14),Enum.Material.SmoothPlastic)
@@ -49,6 +51,18 @@ local function buildStage(plot,player)
  for i=1,math.min(sound,8)do local side=i%2==0 and 1 or -1;local row=math.ceil(i/2);part(f,"Speaker",Vector3.new(6,10,5),pos+Vector3.new(side*(38+row*5),5,-18),Color3.fromRGB(12,13,16))end
  for i=1,math.min(lights,12)do local x=-44+(i-1)*(88/11);local l=part(f,"Fixture",Vector3.new(1.5,1.5,1.5),pos+Vector3.new(x,22+(i%2)*4,-25),s.secondary,Enum.Material.SmoothPlastic);local sp=Instance.new("SpotLight");sp.Range=35+lights;sp.Angle=30;sp.Brightness=math.min(1.8,0.45+lights*.04);sp.Color=s.secondary;sp.Face=Enum.NormalId.Front;sp.Parent=l end
  for i=1,math.min(fx,8)do local x=-35+(i-1)*10;local h=part(f,"Laser",Vector3.new(.8,.8,.8),pos+Vector3.new(x,24,-20),s.accent,Enum.Material.Neon);local a=Instance.new("Attachment");a.Parent=h;local t=part(f,"LaserTarget",Vector3.new(.1,.1,.1),pos+Vector3.new(x*1.4,2,25+(i%3)*8),s.accent);t.Transparency=1;t.CanCollide=false;local b=Instance.new("Attachment");b.Parent=t;local beam=Instance.new("Beam");beam.Attachment0=a;beam.Attachment1=b;beam.Width0=.15;beam.Width1=.03;beam.Color=ColorSequence.new(s.accent);beam.LightEmission=1;beam.FaceCamera=true;beam.Parent=h end
+ -- Real mini-festival layout: entrance -> audience floor -> FOH -> stage.
+ local dance=part(f,"DanceFloor",Vector3.new(105,.18,48),pos+Vector3.new(0,.62,15),Color3.fromRGB(31,34,40),Enum.Material.Slate);dance.CanCollide=false
+ part(f,"CenterPath",Vector3.new(16,.2,94),pos+Vector3.new(0,.64,4),Color3.fromRGB(66,68,73),Enum.Material.Concrete).CanCollide=false
+ local foh=part(f,"LocalFOH",Vector3.new(18,4,10),pos+Vector3.new(0,2,30),Color3.fromRGB(24,26,31),Enum.Material.Metal)
+ for _,x in ipairs({-45,45})do
+  for z=-2,34,18 do
+   local pole=part(f,"AreaLightPole",Vector3.new(.7,10,.7),pos+Vector3.new(x,5,z),Color3.fromRGB(45,47,53),Enum.Material.Metal)
+   local lamp=part(f,"AreaLamp",Vector3.new(2.2,.5,2.2),pos+Vector3.new(x,10,z),s.secondary,Enum.Material.Neon)
+   local pl=Instance.new("PointLight");pl.Brightness=.35;pl.Range=16;pl.Color=s.secondary;pl.Parent=lamp
+  end
+ end
+ for _,x in ipairs({-62,62})do part(f,"SidePath",Vector3.new(12,.15,90),pos+Vector3.new(x,.61,3),Color3.fromRGB(58,60,64),Enum.Material.Concrete).CanCollide=false end
  -- perimeter dressing makes a developed slot feel like a real mini-festival
  if stage>=2 then
   for _,x in ipairs({-78,78})do for z=-42,35,14 do part(f,"Fence",Vector3.new(1.2,3,11),pos+Vector3.new(x,1.5,z),Color3.fromRGB(90,93,100),Enum.Material.Metal)end end
@@ -65,7 +79,9 @@ local function buildStage(plot,player)
  for i=1,math.min(stands,6)do local side=i%2==0 and 1 or -1;local row=math.ceil(i/2);local b=part(f,"Vendor",Vector3.new(14,7,10),pos+Vector3.new(side*68,3.5,30-row*16),i%2==0 and s.accent or s.secondary,Enum.Material.SmoothPlastic);local sg=Instance.new("SurfaceGui");sg.Face=Enum.NormalId.Front;sg.Parent=b;local tx=Instance.new("TextLabel");tx.Size=UDim2.fromScale(1,1);tx.BackgroundTransparency=1;local vendorNames={"BAR","FOOD","MERCH","VIP","TOKENS","INFO"};tx.Text=vendorNames[i] or "STAND";tx.TextScaled=true;tx.TextColor3=Color3.new(1,1,1);tx.Font=Enum.Font.GothamBold;tx.Parent=sg end
 end
 local function pad(plot,name,offset,color,callback)
- local p=part(plot,name,Vector3.new(11,.45,11),plot.Floor.Position+offset,color,Enum.Material.SmoothPlastic);local pr=Instance.new("ProximityPrompt");pr.RequiresLineOfSight=false;pr.MaxActivationDistance=10;pr.Parent=p;pr.Triggered:Connect(callback);return p,pr
+ local p=part(plot,name,Vector3.new(5,4,3),plot.Floor.Position+offset+Vector3.new(0,2,0),Color3.fromRGB(25,28,34),Enum.Material.Metal)
+ local trim=part(plot,name.."Glow",Vector3.new(5.2,.35,3.2),plot.Floor.Position+offset+Vector3.new(0,4.1,0),color,Enum.Material.Neon);trim.CanCollide=false
+ local pr=Instance.new("ProximityPrompt");pr.RequiresLineOfSight=false;pr.MaxActivationDistance=10;pr.Parent=p;pr.Triggered:Connect(callback);return p,pr
 end
 local function refreshPrompt(pr,Config,key,player)
  local lv=branchLevel(player,key);local b=Config.Branches[key];pr.ActionText=lv>=b.max and "MAX" or ("AMELIORER • $"..cost(Config,key,lv));pr.ObjectText=b.label.." • NIV."..lv
@@ -79,7 +95,9 @@ function M.assign(player,world,Config)
   local order={"Stage","Sound","Lights","FX","Crowd","Stands","Marketing","Staff"}
   for n,key in ipairs(order)do
    local col=(n-1)%4;local row=math.floor((n-1)/4)
-   local _padPart,pr=pad(plot,"Upgrade"..key,Vector3.new(-55+col*36,.55,40-row*15),styles.Neon.accent,function(pp)
+   local pr
+   local _padPart
+   _padPart,pr=pad(plot,"Upgrade"..key,Vector3.new(-55+col*36,.55,40-row*15),styles.Neon.accent,function(pp)
     if pp~=player then return end;local lv=branchLevel(pp,key);local b=Config.Branches[key];if lv>=b.max then return end
     local price=cost(Config,key,lv);local cash=pp:GetAttribute("Cash")or 0;if cash<price then return end
     pp:SetAttribute("Cash",cash-price);pp:SetAttribute(key.."Level",lv+1);pp:SetAttribute("Fans",(pp:GetAttribute("Fans")or 0)+10+(lv+1)*5);refreshPrompt(pr,Config,key,pp);buildStage(plot,pp)
