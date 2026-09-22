@@ -185,6 +185,12 @@ local function buildStage(plot,player)
  end
  if branchLevel(player,"Staff")>=5 then for _,x in ipairs({-70,70})do part(f,"StaffTent",Vector3.new(16,7,12),pos+Vector3.new(x,3.5,-5),Color3.fromRGB(38,40,45),Enum.Material.Fabric)end end
  local marketing=branchLevel(player,"Marketing");local staff=branchLevel(player,"Staff")
+ if stage>=2 or lights>=2 then
+  for i=0,10 do local t=i/10;local x=-42+t*84;local bulb=part(f,"PlotFestoon",Vector3.new(.4,.4,.4),pos+Vector3.new(x,12-math.sin(t*math.pi)*2,36),Color3.fromRGB(255,198,125),Enum.Material.Neon);bulb.Shape=Enum.PartType.Ball;bulb.CanCollide=false end
+ end
+ if crowd>=3 then
+  for _,x in ipairs({-52,52})do local pole=part(f,"FestivalFlagPole",Vector3.new(.35,12,.35),pos+Vector3.new(x,6,35),Color3.fromRGB(72,74,80),Enum.Material.Metal);local flag=part(f,"FestivalFlag",Vector3.new(4,2.6,.18),pos+Vector3.new(x+(x<0 and 2 or -2),10.5,35),x<0 and s.accent or s.secondary,Enum.Material.Fabric);flag.CanCollide=false end
+ end
  if marketing>=1 then sign("TON FESTIVAL",Vector3.new(0,5,45),Vector3.new(30,4,.6))end
  if marketing>=4 then for _,x in ipairs({-48,48})do part(f,"BannerPole",Vector3.new(1,12,1),pos+Vector3.new(x,6,43),Color3.fromRGB(55,57,62),Enum.Material.Metal);part(f,"Banner",Vector3.new(7,8,.35),pos+Vector3.new(x,8,42.4),s.accent,Enum.Material.Fabric)end end
  if marketing>=8 then part(f,"FestivalGateway",Vector3.new(86,3,3),pos+Vector3.new(0,17,47),Color3.fromRGB(42,44,50),Enum.Material.Metal);for _,x in ipairs({-41,41})do part(f,"GatewayPost",Vector3.new(3,18,3),pos+Vector3.new(x,9,47),Color3.fromRGB(42,44,50),Enum.Material.Metal)end;sign("WELCOME",Vector3.new(0,15.2,46.2),Vector3.new(28,4,.6))end
