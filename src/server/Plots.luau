@@ -17,6 +17,14 @@ local function buildStage(plot,player)
  local s=styles[player:GetAttribute("StageStyle")] or styles.Neon;local pos=plot.Floor.Position
  local stage=branchLevel(player,"Stage");local sound=branchLevel(player,"Sound");local lights=branchLevel(player,"Lights");local fx=branchLevel(player,"FX");local crowd=branchLevel(player,"Crowd");local stands=branchLevel(player,"Stands")
  local tier=math.floor(stage/5);local prestige=player:GetAttribute("Prestige")or 0
+ local function zoneSign(text,at,width)
+  local board=part(f,"ZoneSign",Vector3.new(width or 22,4,.7),pos+at,Color3.fromRGB(22,25,31),Enum.Material.Metal)
+  local g=Instance.new("SurfaceGui");g.Face=Enum.NormalId.Front;g.Parent=board
+  local t=Instance.new("TextLabel");t.Size=UDim2.fromScale(1,1);t.BackgroundTransparency=1;t.Text=text;t.TextColor3=Color3.new(1,1,1);t.Font=Enum.Font.GothamBold;t.TextScaled=true;t.Parent=g
+ end
+ zoneSign("VOTRE FESTIVAL",Vector3.new(0,7,51),36)
+ zoneSign("SCENE & DJ",Vector3.new(0,9,-43),24)
+ zoneSign("AMELIORATIONS",Vector3.new(-54,5,46),24)
  -- Festival identity grows with progression.
  if prestige>0 then
   local monument=part(f,"RebirthMonument",Vector3.new(5,10+math.min(prestige,10)*1.5,5),pos+Vector3.new(0,5,43),s.accent,Enum.Material.Neon)
@@ -59,7 +67,7 @@ local function buildStage(plot,player)
   for z=-2,34,18 do
    local pole=part(f,"AreaLightPole",Vector3.new(.7,10,.7),pos+Vector3.new(x,5,z),Color3.fromRGB(45,47,53),Enum.Material.Metal)
    local lamp=part(f,"AreaLamp",Vector3.new(2.2,.5,2.2),pos+Vector3.new(x,10,z),s.secondary,Enum.Material.Neon)
-   local pl=Instance.new("PointLight");pl.Brightness=.35;pl.Range=16;pl.Color=s.secondary;pl.Parent=lamp
+   local pl=Instance.new("PointLight");pl.Brightness=.18;pl.Range=11;pl.Color=s.secondary;pl.Parent=lamp
   end
  end
  for _,x in ipairs({-62,62})do part(f,"SidePath",Vector3.new(12,.15,90),pos+Vector3.new(x,.61,3),Color3.fromRGB(58,60,64),Enum.Material.Concrete).CanCollide=false end
@@ -80,7 +88,7 @@ local function buildStage(plot,player)
 end
 local function pad(plot,name,offset,color,callback)
  local p=part(plot,name,Vector3.new(5,4,3),plot.Floor.Position+offset+Vector3.new(0,2,0),Color3.fromRGB(25,28,34),Enum.Material.Metal)
- local trim=part(plot,name.."Glow",Vector3.new(5.2,.35,3.2),plot.Floor.Position+offset+Vector3.new(0,4.1,0),color,Enum.Material.Neon);trim.CanCollide=false
+ local trim=part(plot,name.."Glow",Vector3.new(4.2,.18,2.2),plot.Floor.Position+offset+Vector3.new(0,4.1,0),color,Enum.Material.SmoothPlastic);trim.CanCollide=false
  local pr=Instance.new("ProximityPrompt");pr.RequiresLineOfSight=false;pr.MaxActivationDistance=10;pr.Parent=p;pr.Triggered:Connect(callback);return p,pr
 end
 local function refreshPrompt(pr,Config,key,player)
