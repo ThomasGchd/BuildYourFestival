@@ -27,6 +27,16 @@ end
 local function truss(parent,pos,height)
  part(parent,"Truss",Vector3.new(2,height,2),CFrame.new(pos+Vector3.new(0,height/2,0)),Color3.fromRGB(55,57,62),Enum.Material.DiamondPlate)
 end
+local function ambientPerson(parent,pos,index)
+ local m=Instance.new("Model");m.Name="Visitor";m.Parent=parent
+ local shirts={Color3.fromRGB(35,38,46),Color3.fromRGB(70,135,230),Color3.fromRGB(210,80,100),Color3.fromRGB(55,175,115),Color3.fromRGB(235,175,65)}
+ local skins={Color3.fromRGB(242,205,169),Color3.fromRGB(190,136,98),Color3.fromRGB(111,76,58)}
+ local skin=skins[index%#skins+1];local shirt=shirts[index%#shirts+1]
+ local torso=part(m,"Torso",Vector3.new(1.7,2.3,.9),CFrame.new(pos+Vector3.new(0,3,0)),shirt);torso.CanCollide=false
+ local head=part(m,"Head",Vector3.new(1.35,1.35,1.35),CFrame.new(pos+Vector3.new(0,4.9,0)),skin);head.Shape=Enum.PartType.Ball;head.CanCollide=false
+ for _,x in ipairs({-.43,.43})do local q=part(m,"Leg",Vector3.new(.58,2,.65),CFrame.new(pos+Vector3.new(x,1.05,0)),Color3.fromRGB(25,27,32));q.CanCollide=false end
+ for _,x in ipairs({-1.05,1.05})do local q=part(m,"Arm",Vector3.new(.48,2,.48),CFrame.new(pos+Vector3.new(x,3.05,0)),skin);q.CanCollide=false end
+end
 function M.build(Config)
  local old=workspace:FindFirstChild("FestivalWorld");if old then old:Destroy() end
  Lighting.ClockTime=19.55;Lighting.Brightness=3.1;Lighting.ExposureCompensation=.65;Lighting.Ambient=Color3.fromRGB(105,115,145);Lighting.OutdoorAmbient=Color3.fromRGB(125,135,165);Lighting.EnvironmentDiffuseScale=.7;Lighting.EnvironmentSpecularScale=.8
@@ -96,6 +106,16 @@ function M.build(Config)
  for z=-320,180,40 do
   for _,x in ipairs({-39,39}) do part(root,"Barrier",Vector3.new(1,3,16),CFrame.new(x,1.5,z),Color3.fromRGB(118,120,125),Enum.Material.Metal) end
  end
+ -- The whole festival is alive, not only the Mainstage.
+ local ambient=Instance.new("Folder");ambient.Name="AmbientVisitors";ambient.Parent=root
+ local visitorSpots={
+  Vector3.new(-18,0,235),Vector3.new(16,0,218),Vector3.new(-52,0,198),Vector3.new(55,0,185),
+  Vector3.new(-17,0,145),Vector3.new(19,0,118),Vector3.new(-54,0,80),Vector3.new(52,0,48),
+  Vector3.new(-18,0,10),Vector3.new(17,0,-35),Vector3.new(-53,0,-90),Vector3.new(54,0,-135),
+  Vector3.new(-16,0,-185),Vector3.new(18,0,-235),Vector3.new(-95,0,-300),Vector3.new(105,0,-305),
+  Vector3.new(-138,0,-360),Vector3.new(135,0,-390),Vector3.new(-115,0,-420),Vector3.new(120,0,-435)
+ }
+ for i,pos in ipairs(visitorSpots)do ambientPerson(ambient,pos,i)end
  local plots=Instance.new("Folder");plots.Name="Plots";plots.Parent=root
  for row=0,3 do for _,side in ipairs({-1,1}) do
   local i=row*2+(side==1 and 2 or 1);local model=Instance.new("Model");model.Name="Plot"..i;model:SetAttribute("Index",i);model.Parent=plots
