@@ -28,20 +28,20 @@ Config.TycoonPhases = {
 -- Creator Store music. Keep this list curated: arbitrary user audio IDs are never accepted.
 Config.Music = {
  -- Known-working Creator Store tracks kept as the reliable base queue.
- {name="Ignited", genre="Electro House", soundId="rbxassetid://1842904926"},
- {name="Let's Make It Hot", genre="House / EDM", soundId="rbxassetid://1843398050"},
- {name="High Velocity", genre="Dance Rock", soundId="rbxassetid://1839898469"},
- {name="Mindwinder", genre="Drum & Bass", soundId="rbxassetid://1838075377"},
- {name="Future Glow", genre="Future / DnB", soundId="rbxassetid://9045455789"},
- {name="Store", genre="Electro House", soundId="rbxassetid://1837393392"},
- {name="Circles and Circles", genre="Electronic", soundId="rbxassetid://1837393324"},
+ {style="ELECTRO", name="Ignited", genre="Electro House", soundId="rbxassetid://1842904926"},
+ {style="ELECTRO", name="Let's Make It Hot", genre="House / EDM", soundId="rbxassetid://1843398050"},
+ {style="HARD", name="High Velocity", genre="Dance Rock", soundId="rbxassetid://1839898469"},
+ {style="DRUM & BASS", name="Mindwinder", genre="Drum & Bass", soundId="rbxassetid://1838075377"},
+ {style="DRUM & BASS", name="Future Glow", genre="Future / DnB", soundId="rbxassetid://9045455789"},
+ {style="ELECTRO", name="Store", genre="Electro House", soundId="rbxassetid://1837393392"},
+ {style="ELECTRO", name="Circles and Circles", genre="Electronic", soundId="rbxassetid://1837393324"},
  -- Harder additions. Music.lua skips any asset Roblox refuses to load.
- {name="Jumpstyle", genre="Jumpstyle / Techno", soundId="rbxassetid://1839246711"},
- {name="Fast Rave", genre="Techno / Rave", soundId="rbxassetid://1839246840"},
- {name="Fast Pace A", genre="Techno", soundId="rbxassetid://1846971107"},
- {name="Space Trucker", genre="Techno", soundId="rbxassetid://1840537359"},
- {name="Pandemonium", genre="Techno Groove", soundId="rbxassetid://1843460528"},
- {name="Lose Control", genre="Hard Electro", soundId="rbxassetid://1839925593"},
- {name="Grey Shores", genre="Industrial / Dark", soundId="rbxassetid://9040092810"},
+ {style="JUMPSTYLE", name="Jumpstyle", genre="Jumpstyle / Techno", soundId="rbxassetid://1839246711"},
+ {style="TECHNO", name="Fast Rave", genre="Techno / Rave", soundId="rbxassetid://1839246840"},
+ {style="TECHNO", name="Fast Pace A", genre="Techno", soundId="rbxassetid://1846971107"},
+ {style="TECHNO", name="Space Trucker", genre="Techno", soundId="rbxassetid://1840537359"},
+ {style="TECHNO", name="Pandemonium", genre="Techno Groove", soundId="rbxassetid://1843460528"},
+ {style="HARDSTYLE", name="Lose Control", genre="Hard Electro", soundId="rbxassetid://1839925593"},
+ {style="INDUS", name="Grey Shores", genre="Industrial / Dark", soundId="rbxassetid://9040092810"},
 }
 return Config
