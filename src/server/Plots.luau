@@ -16,7 +16,12 @@ local function buildStage(plot,player)
  local f=Instance.new("Folder");f.Name="PlayerBuild";f.Parent=plot
  local s=styles[player:GetAttribute("StageStyle")] or styles.Neon;local pos=plot.Floor.Position
  local stage=branchLevel(player,"Stage");local sound=branchLevel(player,"Sound");local lights=branchLevel(player,"Lights");local fx=branchLevel(player,"FX");local crowd=branchLevel(player,"Crowd");local stands=branchLevel(player,"Stands")
- local tier=math.floor(stage/5)
+ local tier=math.floor(stage/5);local prestige=player:GetAttribute("Prestige")or 0
+ -- Festival identity grows with progression.
+ if prestige>0 then
+  local monument=part(f,"RebirthMonument",Vector3.new(5,10+math.min(prestige,10)*1.5,5),pos+Vector3.new(0,5,43),s.accent,Enum.Material.Neon)
+  local light=Instance.new("PointLight");light.Brightness=.6;light.Range=18;light.Color=s.accent;light.Parent=monument
+ end
  part(f,"Stage",Vector3.new(48+math.min(stage,20)*3,2,30+tier*4),pos+Vector3.new(0,1,-30),s.main)
  part(f,"LED",Vector3.new(34+math.min(stage,20)*2.4,10+math.min(stage,15),1),pos+Vector3.new(0,10+math.min(stage,15)*.45,-45),s.accent,Enum.Material.Neon)
  local booth=part(f,"DJBooth",Vector3.new(14+tier*2,4,5),pos+Vector3.new(0,4,-20),Color3.fromRGB(20,21,26))
@@ -37,6 +42,10 @@ local function buildStage(plot,player)
  for i=1,math.min(sound,8)do local side=i%2==0 and 1 or -1;local row=math.ceil(i/2);part(f,"Speaker",Vector3.new(6,10,5),pos+Vector3.new(side*(38+row*5),5,-18),Color3.fromRGB(12,13,16))end
  for i=1,math.min(lights,12)do local x=-44+(i-1)*(88/11);local l=part(f,"Fixture",Vector3.new(1.5,1.5,1.5),pos+Vector3.new(x,22+(i%2)*4,-25),s.secondary,Enum.Material.SmoothPlastic);local sp=Instance.new("SpotLight");sp.Range=35+lights;sp.Angle=30;sp.Brightness=math.min(1.8,0.45+lights*.04);sp.Color=s.secondary;sp.Face=Enum.NormalId.Front;sp.Parent=l end
  for i=1,math.min(fx,8)do local x=-35+(i-1)*10;local h=part(f,"Laser",Vector3.new(.8,.8,.8),pos+Vector3.new(x,24,-20),s.accent,Enum.Material.Neon);local a=Instance.new("Attachment");a.Parent=h;local t=part(f,"LaserTarget",Vector3.new(.1,.1,.1),pos+Vector3.new(x*1.4,2,25+(i%3)*8),s.accent);t.Transparency=1;t.CanCollide=false;local b=Instance.new("Attachment");b.Parent=t;local beam=Instance.new("Beam");beam.Attachment0=a;beam.Attachment1=b;beam.Width0=.15;beam.Width1=.03;beam.Color=ColorSequence.new(s.accent);beam.LightEmission=1;beam.FaceCamera=true;beam.Parent=h end
+ if branchLevel(player,"Marketing")>=5 then part(f,"FestivalBanner",Vector3.new(50,8,1),pos+Vector3.new(0,8,47),s.secondary,Enum.Material.Neon) end
+ if branchLevel(player,"Staff")>=5 then
+  for _,x in ipairs({-72,72})do part(f,"StaffTent",Vector3.new(16,7,12),pos+Vector3.new(x,3.5,-3),Color3.fromRGB(35,38,45),Enum.Material.Fabric)end
+ end
  for i=1,math.min(crowd,12)do local x=-48+((i-1)%6)*19;local z=8+math.floor((i-1)/6)*14;part(f,"Barrier",Vector3.new(14,2,.5),pos+Vector3.new(x,1,z),Color3.fromRGB(105,108,115),Enum.Material.Metal)end
  for i=1,math.min(stands,6)do local side=i%2==0 and 1 or -1;local row=math.ceil(i/2);local b=part(f,"Vendor",Vector3.new(14,7,10),pos+Vector3.new(side*68,3.5,30-row*16),i%2==0 and s.accent or s.secondary,Enum.Material.SmoothPlastic);local sg=Instance.new("SurfaceGui");sg.Face=Enum.NormalId.Front;sg.Parent=b;local tx=Instance.new("TextLabel");tx.Size=UDim2.fromScale(1,1);tx.BackgroundTransparency=1;tx.Text={"BAR","FOOD","MERCH","VIP","TOKENS","INFO"}[i];tx.TextScaled=true;tx.TextColor3=Color3.new(1,1,1);tx.Font=Enum.Font.GothamBold;tx.Parent=sg end
 end
