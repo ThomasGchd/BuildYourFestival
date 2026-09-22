@@ -85,13 +85,31 @@ local function buildStage(plot,player)
  end end end
  if sound>=12 then for _,x in ipairs({-25,-17,-9,9,17,25})do part(f,"SubArray",Vector3.new(7,5.5,6),pos+Vector3.new(x,2.75,-14),Color3.fromRGB(8,9,11),Enum.Material.SmoothPlastic)end end
 
- -- Lighting starts only after buying it; fixtures attach to the stage rather than floating around the field.
+ -- Lighting has obvious tiers: floor lights -> wash rig -> moving heads -> arena rig.
  if lights>0 then
-  local count=math.min(lights,10)
+  local count=math.min(4+lights,12)
   for i=1,count do
    local x=-27+(i-1)*(54/math.max(1,count-1));local y=stage>=5 and 23 or 9
    local lamp=part(f,"StageLight",Vector3.new(1.5,1.5,2),pos+Vector3.new(x,y,-18),Color3.fromRGB(35,37,43),Enum.Material.Metal)
-   local sp=Instance.new("SpotLight");sp.Range=38;sp.Angle=34;sp.Brightness=.45;sp.Color=s.secondary;sp.Face=Enum.NormalId.Front;sp.Parent=lamp
+   local sp=Instance.new("SpotLight");sp.Range=42+lights*1.5;sp.Angle=30;sp.Brightness=.7+math.min(lights,12)*.05;sp.Color=(i%2==0 and s.accent or s.secondary);sp.Face=Enum.NormalId.Front;sp.Parent=lamp
+  end
+ end
+ if lights>=3 then for _,x in ipairs({-22,0,22})do
+  local floorLamp=part(f,"FloorWash",Vector3.new(2,1.2,2),pos+Vector3.new(x,1,-13),Color3.fromRGB(28,30,36),Enum.Material.Metal)
+  local sp=Instance.new("SpotLight");sp.Range=55;sp.Angle=42;sp.Brightness=1.1;sp.Color=s.accent;sp.Face=Enum.NormalId.Top;sp.Parent=floorLamp
+ end end
+ if lights>=6 and stage>=4 then
+  for i=1,6 do
+   local x=-25+(i-1)*10;local head=part(f,"MovingHead",Vector3.new(2,2,2),pos+Vector3.new(x,22,-37),Color3.fromRGB(25,27,32),Enum.Material.Metal)
+   local target=part(f,"LightTarget",Vector3.new(.1,.1,.1),pos+Vector3.new(x*1.8,2,18+(i%2)*14),s.accent);target.Transparency=1;target.CanCollide=false
+   local aa=Instance.new("Attachment");aa.Parent=head;local bb=Instance.new("Attachment");bb.Parent=target
+   local beam=Instance.new("Beam");beam.Attachment0=aa;beam.Attachment1=bb;beam.Width0=.16;beam.Width1=.7;beam.Transparency=NumberSequence.new(.35,.82);beam.Color=ColorSequence.new(i%2==0 and s.accent or s.secondary);beam.LightEmission=.65;beam.FaceCamera=true;beam.Parent=head
+  end
+ end
+ if lights>=12 and stage>=5 then
+  for _,x in ipairs({-35,35})do
+   local tower=part(f,"LightTower",Vector3.new(2,28,2),pos+Vector3.new(x,14,-24),Color3.fromRGB(70,72,78),Enum.Material.DiamondPlate)
+   local wash=Instance.new("PointLight");wash.Range=48;wash.Brightness=1.5;wash.Color=s.secondary;wash.Parent=tower
   end
  end
  if fx>=5 and stage>=5 then
@@ -100,7 +118,7 @@ local function buildStage(plot,player)
 
  -- Grounds stay readable and functional, without glowing blocks.
  if crowd>=1 then
-  local visible=math.min(24,4+crowd*2)
+  local visible=math.min(36,4+crowd*3)
   for i=1,visible do local col=((i-1)%8)-3.5;local row=math.floor((i-1)/8);person(f,pos+Vector3.new(col*7+((i%3)-1)*.8,.1,3+row*8),i)end
  end
  if crowd>=1 then
