@@ -119,7 +119,7 @@ function M.build(Config)
  local plots=Instance.new("Folder");plots.Name="Plots";plots.Parent=root
  for row=0,3 do for _,side in ipairs({-1,1}) do
   local i=row*2+(side==1 and 2 or 1);local model=Instance.new("Model");model.Name="Plot"..i;model:SetAttribute("Index",i);model.Parent=plots
-  local z=135-row*125;local x=side*205
+  local z=135-row*125;local x=side*145
   local floor=part(model,"Floor",Vector3.new(175,1,112),CFrame.new(x,0,z),Color3.fromRGB(53,96,57),Enum.Material.SmoothPlastic);model.PrimaryPart=floor
   -- subtle plot trim instead of colored blocks
   for _,dz in ipairs({-55,55}) do part(model,"Trim",Vector3.new(176,.35,1),CFrame.new(x,.56,z+dz),Color3.fromRGB(90,92,98),Enum.Material.Metal) end
