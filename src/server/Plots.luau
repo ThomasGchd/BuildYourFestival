@@ -101,32 +101,33 @@ function M.assign(player,world,Config)
   owners[i]=player;player:SetAttribute("PlotIndex",i);player:SetAttribute("Cash",Config.StartCash);player:SetAttribute("Fans",0);player:SetAttribute("StageStyle","Neon");player:SetAttribute("Prestige",0);player:SetAttribute("RebirthTokens",0);player:SetAttribute("DJCombo",0);player:SetAttribute("TutorialStep",1)
   for key in pairs(Config.Branches)do player:SetAttribute(key.."Level",0)end
   local plot=getPlot(world,i);plot.OwnerSign.OwnerGui.Text.Text=player.DisplayName.." • FESTIVAL";buildStage(plot,player)
-  local order={"Stage","Sound","Lights","FX","Crowd","Stands","Marketing","Staff"}
-  for n,key in ipairs(order)do
-   local col=(n-1)%4;local row=math.floor((n-1)/4)
-   local pr
-   local _padPart
-   _padPart,pr=pad(plot,"Upgrade"..key,Vector3.new(-55+col*36,.55,40-row*15),styles.Neon.accent,function(pp)
-    if pp~=player then return end;local lv=branchLevel(pp,key);local b=Config.Branches[key];if lv>=b.max then return end
-    local price=cost(Config,key,lv);local cash=pp:GetAttribute("Cash")or 0;if cash<price then return end
-    pp:SetAttribute("Cash",cash-price);pp:SetAttribute(key.."Level",lv+1);pp:SetAttribute("Fans",(pp:GetAttribute("Fans")or 0)+10+(lv+1)*5)
-    local ts=pp:GetAttribute("TutorialStep")or 1
-    if ts==1 and key=="Sound" then pp:SetAttribute("TutorialStep",2)
-    elseif ts==2 and key=="Stage" then pp:SetAttribute("TutorialStep",3)
-    elseif ts==3 and key=="Crowd" then pp:SetAttribute("TutorialStep",4) end
-    refreshPrompt(pr,Config,key,pp);buildStage(plot,pp)
-   end);refreshPrompt(pr,Config,key,player)
+  -- Upgrades are UI-driven: keep the physical festival clean and readable.
+  local upgradeRemote=game:GetService("ReplicatedStorage"):FindFirstChild("FestivalUpgrade")
+  if not upgradeRemote then upgradeRemote=Instance.new("RemoteEvent");upgradeRemote.Name="FestivalUpgrade";upgradeRemote.Parent=game:GetService("ReplicatedStorage") end
+  if not upgradeRemote:GetAttribute("ServerBound") then
+   upgradeRemote:SetAttribute("ServerBound",true)
+   upgradeRemote.OnServerEvent:Connect(function(pp,action,key)
+    if action=="BUY" and Config.Branches[key] then
+     local lv=branchLevel(pp,key);local branch=Config.Branches[key];if lv>=branch.max then return end
+     local price=cost(Config,key,lv);local cash=pp:GetAttribute("Cash")or 0;if cash<price then return end
+     pp:SetAttribute("Cash",cash-price);pp:SetAttribute(key.."Level",lv+1);pp:SetAttribute("Fans",(pp:GetAttribute("Fans")or 0)+10+(lv+1)*5)
+     local ts=pp:GetAttribute("TutorialStep")or 1
+     if ts==1 and key=="Sound" then pp:SetAttribute("TutorialStep",2) elseif ts==2 and key=="Stage" then pp:SetAttribute("TutorialStep",3) elseif ts==3 and key=="Crowd" then pp:SetAttribute("TutorialStep",4) end
+     local pi=pp:GetAttribute("PlotIndex");local target=pi and getPlot(world,pi);if target then buildStage(target,pp) end
+    elseif action=="STYLE" and styles[key] then pp:SetAttribute("StageStyle",key);local pi=pp:GetAttribute("PlotIndex");local target=pi and getPlot(world,pi);if target then buildStage(target,pp) end
+    elseif action=="REBIRTH" then
+     local prestige=pp:GetAttribute("Prestige")or 0;local price=Config.PrestigeBaseCost*(prestige+1)^2;if (pp:GetAttribute("Cash")or 0)<price then return end
+     pp:SetAttribute("Cash",Config.StartCash);pp:SetAttribute("Prestige",prestige+1);pp:SetAttribute("RebirthTokens",(pp:GetAttribute("RebirthTokens")or 0)+1+math.floor(prestige/3));for k in pairs(Config.Branches)do pp:SetAttribute(k.."Level",0)end
+     local pi=pp:GetAttribute("PlotIndex");local target=pi and getPlot(world,pi);if target then buildStage(target,pp) end
+    end
+   end)
   end
-  for n,style in ipairs({"Neon","Industrial","Nature"})do local _,pr=pad(plot,"Style"..style,Vector3.new(-35+(n-1)*18,.55,-2),styles[style].accent,function(pp)if pp~=player then return end;pp:SetAttribute("StageStyle",style);buildStage(plot,pp)end);pr.ActionText="CHOISIR";pr.ObjectText="STYLE • "..string.upper(style)end
   local mc=part(plot,"SlotMusicConsole",Vector3.new(10,4,5),plot.Floor.Position+Vector3.new(0,2,23),Color3.fromRGB(24,26,32),Enum.Material.Metal)
   local ss=Instance.new("Sound");ss.Name="SlotMusic";ss.Volume=.55;ss.RollOffMode=Enum.RollOffMode.InverseTapered;ss.RollOffMinDistance=12;ss.RollOffMaxDistance=95;ss.Looped=true;ss.Parent=mc
   local mp=Instance.new("ProximityPrompt");mp.ActionText="MUSIQUE SUIVANTE";mp.RequiresLineOfSight=false;mp.MaxActivationDistance=12;mp.Parent=mc;local mi=1
   local function playMusic()local e=Config.Music[mi];if e then ss:Stop();ss.SoundId=e.soundId;ss:Play();mp.ObjectText="DJ • "..e.genre.." • "..e.name end end
   mp.Triggered:Connect(function(pp)if pp==player then mi=mi%#Config.Music+1;playMusic()end end);playMusic()
-  local prestigePad,prestigePrompt=pad(plot,"PrestigePad",Vector3.new(55,.55,-2),Color3.fromRGB(245,190,55),function(pp)
-   if pp~=player then return end;local prestige=pp:GetAttribute("Prestige")or 0;local price=Config.PrestigeBaseCost*(prestige+1)^2;if (pp:GetAttribute("Cash")or 0)<price then return end
-   pp:SetAttribute("Cash",Config.StartCash);pp:SetAttribute("Prestige",prestige+1);pp:SetAttribute("RebirthTokens",(pp:GetAttribute("RebirthTokens")or 0)+1+math.floor(prestige/3));for key in pairs(Config.Branches)do pp:SetAttribute(key.."Level",0)end;buildStage(plot,pp)
-  end);prestigePrompt.ActionText="RENAISSANCE";prestigePrompt.ObjectText="NOUVELLE SAISON • BONUS PERMANENT"
+
   break
  end end
 end
