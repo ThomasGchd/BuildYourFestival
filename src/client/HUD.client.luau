@@ -18,11 +18,10 @@ objective.TextWrapped=true;objective.TextSize=14;objective.BackgroundTransparenc
 local function refreshObjective()
  local step=p:GetAttribute("TutorialStep")or 1
  local messages={
-  [1]="OBJECTIF  •  Lance ton premier festival dès maintenant !",
-  [2]="OBJECTIF  •  Avec tes gains, construis ta première SCÈNE",
-  [3]="OBJECTIF  •  Débloque ton premier espace PUBLIC",
-  [4]="TON FESTIVAL PREND FORME  •  Continue à construire • DJ facultatif",
-  [5]="TON FESTIVAL PREND FORME  •  Continue à construire"
+  [1]="1 • OUVRE TON FESTIVAL avec le gros bouton violet",
+  [2]="2 • ACHÈTE UNE SCÈNE dans AMÉLIORATIONS",
+  [3]="3 • ACHÈTE DU PUBLIC pour faire venir plus de monde",
+  [4]="SUPER ! • Maintenant, agrandis ton festival comme tu veux"
  }
  objective.Text=messages[step]or messages[5]
  objective.Visible=step<=4
@@ -31,8 +30,8 @@ p:GetAttributeChangedSignal("TutorialStep"):Connect(refreshObjective);refreshObj
 local phase=label(UDim2.new(.5,-190,0,88),UDim2.fromOffset(380,36),"")
 phase.TextSize=13
 local function refreshPhase()
- local name=p:GetAttribute("FestivalPhase")or"DEPART";local income=p:GetAttribute("IncomePerTick")or 0;local need=p:GetAttribute("NextPhaseNeed")or-1;local total=totalProgress()
- phase.Text=name.."   •   PUISSANCE "..income..""..(need>0 and ("   •   PROCHAINE ETAPE "..total.."/"..need)or"   •   MAX")
+ local name=p:GetAttribute("FestivalPhase")or"DEPART";local need=p:GetAttribute("NextPhaseNeed")or-1;local total=totalProgress()
+ phase.Text=name..(need>0 and ("   •   "..total.."/"..need.." POUR GRANDIR")or"   •   FESTIVAL MAX")
 end
 for _,a in ipairs({"FestivalPhase","IncomePerTick","NextPhaseNeed","StageLevel","SoundLevel","LightsLevel","FXLevel","CrowdLevel","StandsLevel","MarketingLevel","StaffLevel"})do p:GetAttributeChangedSignal(a):Connect(refreshPhase)end;refreshPhase()
 local cam=Instance.new("TextButton");cam.Position=UDim2.new(0,18,1,-58);cam.Size=UDim2.fromOffset(185,40);cam.BackgroundColor3=Color3.fromRGB(12,15,22);cam.TextColor3=Color3.new(1,1,1);cam.Font=Enum.Font.GothamBold;cam.TextSize=13;cam.Text="CAMÉRA MUSICALE : OFF";cam.Parent=gui;corner(cam);stroke(cam)
@@ -51,14 +50,14 @@ local function navButton(text,accent,callback)
  b.MouseLeave:Connect(function()TweenService:Create(b,TweenInfo.new(.12),{BackgroundColor3=Color3.fromRGB(22,27,38)}):Play()end)
  b.MouseButton1Click:Connect(callback);return b
 end
-navButton("MA BASE",Color3.fromRGB(70,210,255),function()
+navButton("MON FESTIVAL",Color3.fromRGB(70,210,255),function()
  local world=workspace:FindFirstChild("FestivalWorld");local plots=world and world:FindFirstChild("Plots");local i=p:GetAttribute("PlotIndex");local plot=i and plots and plots:FindFirstChild("Plot"..i);if plot and plot:FindFirstChild("Floor")then teleport(plot.Floor.Position+Vector3.new(0,0,38))end
 end)
 navButton("MAINSTAGE",Color3.fromRGB(190,90,255),function()teleport(Vector3.new(0,1,-345))end)
 navButton("BOUTIQUES",Color3.fromRGB(255,175,65),function()teleport(Vector3.new(145,1,-375))end)
-local rebirthButton=navButton("RENAISSANCE",Color3.fromRGB(80,225,155),function() end)
+local rebirthButton=navButton("RECOMMENCER +",Color3.fromRGB(80,225,155),function() end)
 local upgradesButton
-upgradesButton=navButton("AMELIORATIONS",Color3.fromRGB(255,95,130),function() end)
+upgradesButton=navButton("CONSTRUIRE",Color3.fromRGB(255,95,130),function() end)
 
 local upgradeRemote=ReplicatedStorage:WaitForChild("FestivalUpgrade")
 local djGui=nil;local djRunning=false;local target=.5;local dir=1;local cursorPos=0
@@ -92,7 +91,7 @@ local function openDJ()
  task.spawn(function()while djRunning and djGui do cursorPos+=dir*.012;if cursorPos>=1 then cursorPos=1;dir=-1 elseif cursorPos<=0 then cursorPos=0;dir=1 end;cursor.Position=UDim2.new(cursorPos,0,.5,0);RunService.RenderStepped:Wait()end end)
 end
 
-local launch=Instance.new("TextButton");launch.Size=UDim2.fromOffset(250,54);launch.Position=UDim2.new(.5,-125,1,-122);launch.BackgroundColor3=Color3.fromRGB(92,64,220);launch.TextColor3=Color3.new(1,1,1);launch.Font=Enum.Font.GothamBlack;launch.TextSize=16;launch.Text="OUVRIR MON FESTIVAL";launch.Parent=gui;corner(launch,14);stroke(launch)
+local launch=Instance.new("TextButton");launch.Size=UDim2.fromOffset(300,64);launch.Position=UDim2.new(.5,-150,1,-132);launch.BackgroundColor3=Color3.fromRGB(92,64,220);launch.TextColor3=Color3.new(1,1,1);launch.Font=Enum.Font.GothamBlack;launch.TextSize=18;launch.Text="▶ OUVRIR MON FESTIVAL";launch.Parent=gui;corner(launch,14);stroke(launch)
 local eventBar=Instance.new("Frame");eventBar.Size=UDim2.fromOffset(360,70);eventBar.Position=UDim2.new(.5,-180,0,142);eventBar.BackgroundColor3=Color3.fromRGB(13,16,23);eventBar.Visible=false;eventBar.Parent=gui;corner(eventBar,14);stroke(eventBar)
 local eventText=Instance.new("TextLabel");eventText.Size=UDim2.new(1,-20,0,30);eventText.Position=UDim2.fromOffset(10,5);eventText.BackgroundTransparency=1;eventText.TextColor3=Color3.new(1,1,1);eventText.Font=Enum.Font.GothamBold;eventText.TextSize=14;eventText.Parent=eventBar
 local hypeBack=Instance.new("Frame");hypeBack.Size=UDim2.new(1,-24,0,16);hypeBack.Position=UDim2.fromOffset(12,43);hypeBack.BackgroundColor3=Color3.fromRGB(35,39,50);hypeBack.Parent=eventBar;corner(hypeBack,8)
@@ -101,9 +100,9 @@ launch.MouseButton1Click:Connect(function()upgradeRemote:FireServer("START_EVENT
 local function refreshEvent()
  local active=p:GetAttribute("EventActive")==true;local hype=p:GetAttribute("EventHype")or 0;local time=p:GetAttribute("EventTime")or 0
  eventBar.Visible=active;launch.Visible=not active
- eventText.Text="FESTIVAL OUVERT  •  "..time.."s  •  HYPE "..hype.."%  •  "..tostring(p:GetAttribute("EventVisitors")or 0).." VISITEURS"
+ eventText.Text="FESTIVAL OUVERT  •  "..time.."s  •  AMBIANCE "..hype.."%  •  "..tostring(p:GetAttribute("EventVisitors")or 0).." VISITEURS"
  hypeFill.Size=UDim2.fromScale(math.clamp(hype/100,0,1),1)
- if active then objective.Text="FESTIVAL OUVERT • Fais évoluer ton terrain !  DJ facultatif = bonus de HYPE" end
+ if active then objective.Text="TON FESTIVAL EST OUVERT ! • Regarde les visiteurs arriver • DJ = bonus facultatif" end
 end
 for _,a in ipairs({"EventActive","EventHype","EventTime","EventVisitors"})do p:GetAttributeChangedSignal(a):Connect(refreshEvent)end;refreshEvent()
 rebirthButton.MouseButton1Click:Connect(function()
@@ -118,12 +117,12 @@ local branchOrder={"Stage","Sound","Lights","FX","Crowd","Stands","Marketing","S
 local branchBase={Stage=90,Sound=70,Lights=80,FX=120,Crowd=65,Stands=100,Marketing=110,Staff=95}
 local branchGrowth={Stage=1.48,Sound=1.46,Lights=1.47,FX=1.52,Crowd=1.44,Stands=1.50,Marketing=1.53,Staff=1.49}
 local branchMax={Stage=25,Sound=30,Lights=30,FX=25,Crowd=40,Stands=30,Marketing=35,Staff=35}
-local branchEffect={Stage="structure + revenus",Sound="sono + revenus",Lights="ambiance visuelle",FX="show + prestige",Crowd="capacité + fans",Stands="revenus événement",Marketing="plus de visiteurs",Staff="efficacité"}
+local branchEffect={Stage="une scène plus grande",Sound="un meilleur son",Lights="de belles lumières",FX="un show plus impressionnant",Crowd="plus de visiteurs",Stands="plus d'argent",Marketing="attire plus de monde",Staff="aide ton festival"}
 local function upgradeCost(key,lv)return math.floor(branchBase[key]*(branchGrowth[key]^lv))end
 local function openUpgrades()
  if upgradePanel then upgradePanel:Destroy();upgradePanel=nil;return end
  upgradePanel=Instance.new("Frame");upgradePanel.Size=UDim2.fromOffset(520,520);upgradePanel.Position=UDim2.new(.5,-260,.5,-260);upgradePanel.BackgroundColor3=Color3.fromRGB(13,16,23);upgradePanel.BorderSizePixel=0;upgradePanel.Parent=gui;corner(upgradePanel,16);stroke(upgradePanel)
- local head=Instance.new("TextLabel");head.Size=UDim2.new(1,-70,0,58);head.Position=UDim2.fromOffset(22,0);head.BackgroundTransparency=1;head.Text="AMELIORER MON FESTIVAL";head.TextXAlignment=Enum.TextXAlignment.Left;head.TextColor3=Color3.new(1,1,1);head.Font=Enum.Font.GothamBold;head.TextSize=20;head.Parent=upgradePanel
+ local head=Instance.new("TextLabel");head.Size=UDim2.new(1,-70,0,58);head.Position=UDim2.fromOffset(22,0);head.BackgroundTransparency=1;head.Text="QUE VEUX-TU CONSTRUIRE ?";head.TextXAlignment=Enum.TextXAlignment.Left;head.TextColor3=Color3.new(1,1,1);head.Font=Enum.Font.GothamBold;head.TextSize=20;head.Parent=upgradePanel
  local close=Instance.new("TextButton");close.Size=UDim2.fromOffset(42,42);close.Position=UDim2.new(1,-52,0,8);close.Text="X";close.BackgroundColor3=Color3.fromRGB(30,34,45);close.TextColor3=Color3.new(1,1,1);close.Font=Enum.Font.GothamBold;close.Parent=upgradePanel;corner(close,10);close.MouseButton1Click:Connect(function()upgradePanel:Destroy();upgradePanel=nil end)
  local grid=Instance.new("Frame");grid.BackgroundTransparency=1;grid.Position=UDim2.fromOffset(18,64);grid.Size=UDim2.new(1,-36,1,-82);grid.Parent=upgradePanel
  local layout=Instance.new("UIGridLayout");layout.CellSize=UDim2.new(.5,-7,0,92);layout.CellPadding=UDim2.fromOffset(12,12);layout.Parent=grid
@@ -132,7 +131,7 @@ local function openUpgrades()
   local function redraw()
    local lv=p:GetAttribute(key.."Level")or 0
    if lv>=branchMax[key] then b.Text=branchNames[key].."\nNIVEAU "..lv.." • MAX"
-   else b.Text=branchNames[key].."  •  NIV. "..lv.."\n"..branchEffect[key].."  •  $"..upgradeCost(key,lv) end
+   else b.Text=branchNames[key].."  •  NIV. "..lv.."\n"..branchEffect[key].."\nACHETER  $"..upgradeCost(key,lv) end
   end
   redraw();p:GetAttributeChangedSignal(key.."Level"):Connect(redraw);b.MouseButton1Click:Connect(function()upgradeRemote:FireServer("BUY",key)end)
  end
