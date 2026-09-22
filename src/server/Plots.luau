@@ -53,6 +53,17 @@ local function spawnEventCrowd(plot,player)
   end
  end)
 end
+local function flightCase(parent,pos)
+ local body=part(parent,"ProFlightCase",Vector3.new(6,3.5,4.5),pos,Color3.fromRGB(24,25,28),Enum.Material.DiamondPlate)
+ for _,x in ipairs({-2.85,2.85})do for _,y in ipairs({-1.5,1.5})do part(parent,"CaseCorner",Vector3.new(.3,.3,4.7),pos+Vector3.new(x,y,0),Color3.fromRGB(145,148,153),Enum.Material.Metal)end end
+ for _,x in ipairs({-2.4,2.4})do for _,z in ipairs({-1.8,1.8})do local wheel=part(parent,"CaseWheel",Vector3.new(.65,.65,.45),pos+Vector3.new(x,-2,z),Color3.fromRGB(10,10,12),Enum.Material.SmoothPlastic);wheel.Shape=Enum.PartType.Ball end end
+ return body
+end
+local function festivalBarrier(parent,pos)
+ part(parent,"BarrierRail",Vector3.new(9,.35,.35),pos+Vector3.new(0,2.5,0),Color3.fromRGB(150,153,158),Enum.Material.Metal)
+ for _,x in ipairs({-4.2,4.2})do part(parent,"BarrierPost",Vector3.new(.35,5,.35),pos+Vector3.new(x,1.2,0),Color3.fromRGB(150,153,158),Enum.Material.Metal);part(parent,"BarrierFoot",Vector3.new(1.6,.25,2),pos+Vector3.new(x,-1.2,0),Color3.fromRGB(95,98,104),Enum.Material.Metal)end
+ for x=-3.3,3.3,1.1 do part(parent,"BarrierBar",Vector3.new(.14,4.2,.14),pos+Vector3.new(x,1.2,0),Color3.fromRGB(115,118,123),Enum.Material.Metal)end
+end
 local function buildStage(plot,player)
  local old=plot:FindFirstChild("PlayerBuild");if old then old:Destroy()end
  local f=Instance.new("Folder");f.Name="PlayerBuild";f.Parent=plot
@@ -69,7 +80,7 @@ local function buildStage(plot,player)
  local booth=part(f,"DJTable",Vector3.new(12,4,4.5),pos+Vector3.new(0,2,-27),Color3.fromRGB(28,30,35),Enum.Material.Metal)
  local deck=part(f,"DJDeck",Vector3.new(9,.8,3),pos+Vector3.new(0,4.4,-26.5),Color3.fromRGB(12,13,16),Enum.Material.SmoothPlastic)
  for _,x in ipairs({-2.7,2.7})do local jog=part(f,"JogWheel",Vector3.new(2,.3,2),pos+Vector3.new(x,4.95,-26.5),Color3.fromRGB(70,72,78),Enum.Material.Metal);jog.Shape=Enum.PartType.Cylinder;jog.Orientation=Vector3.new(0,0,90)end
- part(f,"FlightCase",Vector3.new(5,3,4),pos+Vector3.new(10,1.5,-27),Color3.fromRGB(45,47,52),Enum.Material.DiamondPlate)
+ flightCase(f,pos+Vector3.new(10,2,-27))
  sign("DJ",Vector3.new(0,7,-29),Vector3.new(10,2.5,.5))
  local deckPrompt=Instance.new("ProximityPrompt");deckPrompt.ActionText="PRENDRE LES PLATINES";deckPrompt.ObjectText="PLATINES DJ";deckPrompt.RequiresLineOfSight=false;deckPrompt.MaxActivationDistance=10;deckPrompt.Parent=deck
  deckPrompt.Triggered:Connect(function(pp)
@@ -159,7 +170,7 @@ local function buildStage(plot,player)
   for i=1,visible do local col=((i-1)%8)-3.5;local row=math.floor((i-1)/8);person(f,pos+Vector3.new(col*7+((i%3)-1)*.8,.1,3+row*8),i)end
  end
  if crowd>=1 then part(f,"DanceFloor",Vector3.new(100,.16,42),pos+Vector3.new(0,.61,13),Color3.fromRGB(45,47,52),Enum.Material.Slate).CanCollide=false end
- if crowd>=4 then for _,x in ipairs({-42,42})do for z=-2,28,15 do part(f,"Barrier",Vector3.new(1,2.5,11),pos+Vector3.new(x,1.25,z),Color3.fromRGB(105,108,113),Enum.Material.Metal)end end end
+ if crowd>=4 then for _,x in ipairs({-42,42})do for z=-2,28,10 do festivalBarrier(f,pos+Vector3.new(x,1.3,z))end end end
  if crowd>=8 then for _,x in ipairs({-31,31})do part(f,"EntryPost",Vector3.new(2,12,2),pos+Vector3.new(x,6,48),Color3.fromRGB(50,52,58),Enum.Material.Metal)end;part(f,"EntryArch",Vector3.new(64,2,2),pos+Vector3.new(0,12,48),Color3.fromRGB(50,52,58),Enum.Material.Metal);sign("ENTREE FESTIVAL",Vector3.new(0,10.5,47.2),Vector3.new(28,3,.5))end
  if stands>=1 then
   local names={"BAR","FOOD","MERCH","VIP","TOKENS","INFO"}
