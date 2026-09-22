@@ -241,9 +241,12 @@ local function stopDance()
 end
 local function startDance(style)
  stopDance();local char=p.Character;local hum=char and char:FindFirstChildOfClass("Humanoid");if not hum then return end
- joints={root=motor(char,{"Root","RootJoint"}),waist=motor(char,{"Waist"}),neck=motor(char,{"Neck"}),rs=motor(char,{"RightShoulder","Right Shoulder"}),ls=motor(char,{"LeftShoulder","Left Shoulder"}),rh=motor(char,{"RightHip","Right Hip"}),lh=motor(char,{"LeftHip","Left Hip"})}
- for k,j in pairs(joints)do if j then bases[k]=j.C0 end end
- if not next(bases)then freeDance.Text="AVATAR NON COMPATIBLE";task.delay(1.5,function()freeDance.Text="DANSER"end);return end
+ joints={};bases={}
+ local wanted={root={"Root","RootJoint"},waist={"Waist"},neck={"Neck"},rs={"RightShoulder","Right Shoulder"},ls={"LeftShoulder","Left Shoulder"},rh={"RightHip","Right Hip"},lh={"LeftHip","Left Hip"}}
+ for k,names in pairs(wanted)do local j=motor(char,names);if j then joints[k]=j;bases[k]=j.C0 end end
+ if not (joints.rs or joints.ls or joints.rh or joints.lh or joints.waist)then
+  warn("[BYF] Dance rig unsupported: "..hum.RigType.Name);freeDance.Text="RIG NON COMPATIBLE";task.delay(1.5,function()freeDance.Text="DANSER"end);return
+ end
  dancing=true;freeDance.Text=style.."  X";local t=0
  danceConn=RunService.RenderStepped:Connect(function(dt)
   if not dancing or not char.Parent then stopDance();return end;if hum.MoveDirection.Magnitude>.12 then stopDance();return end;t+=dt;local s=math.sin
