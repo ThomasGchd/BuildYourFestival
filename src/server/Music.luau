@@ -9,7 +9,7 @@ function M.start(world,Config)
  local nextTrack
  local function play(entry)
   if not entry then return end
-  playToken+=1;local token=playToken;current=entry
+  playToken+=1;local token=playToken;current=entry;world.sound:SetAttribute("MusicStyle",entry.style or entry.genre or "TECHNO")
   world.sound:Stop();world.sound.SoundId=entry.soundId;world.sound.TimePosition=0
   local loaded=false
   local connection=world.sound.Loaded:Connect(function()loaded=true end)
@@ -51,7 +51,7 @@ function M.start(world,Config)
    -- Studio/free-test mode: selection is immediate so the chooser actually hears the requested track.
    local e=Config.Music[index]
    queue={}
-   play({name=e.name,soundId=e.soundId,by=p.DisplayName})
+   play({name=e.name,soundId=e.soundId,by=p.DisplayName,style=e.style,genre=e.genre})
    remote:FireAllClients("QUEUED",e.name,p.DisplayName,0)
   else MarketplaceService:PromptProductPurchase(p,Config.MainstageProductId) end
  end)
