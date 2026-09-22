@@ -21,6 +21,13 @@ local function person(parent,pos,index)
  for _,x in ipairs({-.43,.43})do local leg=part(m,"Leg",Vector3.new(.58,2,.65),pos+Vector3.new(x,1.05,0),Color3.fromRGB(25,27,32));leg.CanCollide=false end
  for _,x in ipairs({-1.05,1.05})do local arm=part(m,"Arm",Vector3.new(.48,2,.48),pos+Vector3.new(x,3.05,0),skin);arm.CanCollide=false end
 end
+local function setShowLights(plot,enabled)
+ local build=plot:FindFirstChild("PlayerBuild");if not build then return end
+ for _,v in build:GetDescendants()do
+  if v:IsA("SpotLight")or v:IsA("PointLight")or v:IsA("Beam")then v.Enabled=enabled end
+  if v:IsA("BasePart")and(v.Name=="LightLens"or v.Name=="FloorLens")then v.Material=enabled and Enum.Material.Neon or Enum.Material.SmoothPlastic;v.Transparency=enabled and 0 or .25 end
+ end
+end
 local function clearEventCrowd(plot)
  local old=plot:FindFirstChild("EventCrowd");if old then old:Destroy()end
 end
@@ -116,12 +123,17 @@ local function buildStage(plot,player)
   for i=1,count do
    local x=-27+(i-1)*(54/math.max(1,count-1));local y=stage>=5 and 23 or 9
    local lamp=part(f,"StageLight",Vector3.new(1.5,1.5,2),pos+Vector3.new(x,y,-18),Color3.fromRGB(35,37,43),Enum.Material.Metal)
-   local sp=Instance.new("SpotLight");sp.Range=42+lights*1.5;sp.Angle=30;sp.Brightness=.7+math.min(lights,12)*.05;sp.Color=(i%2==0 and s.accent or s.secondary);sp.Face=Enum.NormalId.Front;sp.Parent=lamp
+   local col=(i%2==0 and s.accent or s.secondary)
+   local lens=part(f,"LightLens",Vector3.new(1.05,1.05,.18),pos+Vector3.new(x,y,-16.92),col,Enum.Material.Neon);lens.CanCollide=false
+   local sp=Instance.new("SpotLight");sp.Range=55+lights*2;sp.Angle=42;sp.Brightness=2+math.min(lights,12)*.12;sp.Color=col;sp.Face=Enum.NormalId.Front;sp.Shadows=false;sp.Parent=lens
+   local target=part(f,"LightTarget",Vector3.new(.1,.1,.1),pos+Vector3.new(x*1.25,1,16+(i%3)*7),col);target.Transparency=1;target.CanCollide=false
+   local aa=Instance.new("Attachment");aa.Parent=lens;local bb=Instance.new("Attachment");bb.Parent=target
+   local beam=Instance.new("Beam");beam.Attachment0=aa;beam.Attachment1=bb;beam.Width0=.25;beam.Width1=2.4;beam.Transparency=NumberSequence.new(.18,.88);beam.Color=ColorSequence.new(col);beam.LightEmission=1;beam.FaceCamera=true;beam.Parent=lens
   end
  end
  if lights>=3 then for _,x in ipairs({-22,0,22})do
   local floorLamp=part(f,"FloorWash",Vector3.new(2,1.2,2),pos+Vector3.new(x,1,-13),Color3.fromRGB(28,30,36),Enum.Material.Metal)
-  local sp=Instance.new("SpotLight");sp.Range=55;sp.Angle=42;sp.Brightness=1.1;sp.Color=s.accent;sp.Face=Enum.NormalId.Top;sp.Parent=floorLamp
+  local lens=part(f,"FloorLens",Vector3.new(1.3,.18,1.3),pos+Vector3.new(x,1.65,-13),s.accent,Enum.Material.Neon);lens.CanCollide=false;local sp=Instance.new("PointLight");sp.Range=28;sp.Brightness=1.5;sp.Color=s.accent;sp.Parent=lens
  end end
  if lights>=6 and stage>=4 then
   for i=1,6 do
@@ -172,7 +184,7 @@ end
 function M.assign(player,world,Config)
  if player:GetAttribute("PlotIndex")then return end
  for i=1,Config.PlotCount do if not owners[i]then
-  owners[i]=player;player:SetAttribute("PlotIndex",i);player:SetAttribute("Cash",Config.StartCash);player:SetAttribute("Fans",0);player:SetAttribute("StageStyle","Neon");player:SetAttribute("Prestige",0);player:SetAttribute("RebirthTokens",0);player:SetAttribute("DJCombo",0);player:SetAttribute("TutorialStep",1);player:SetAttribute("EventActive",false);player:SetAttribute("EventHype",0);player:SetAttribute("EventTime",0);player:SetAttribute("LastEventPayout",0);player:SetAttribute("LastEventFans",0)
+  owners[i]=player;player:SetAttribute("PlotIndex",i);player:SetAttribute("Cash",Config.StartCash);player:SetAttribute("Fans",0);player:SetAttribute("StageStyle","Neon");player:SetAttribute("Prestige",0);player:SetAttribute("RebirthTokens",0);player:SetAttribute("DJCombo",0);player:SetAttribute("TutorialStep",1);player:SetAttribute("EventActive",false);player:SetAttribute("EventHype",0);player:SetAttribute("EventTime",0);player:SetAttribute("LastEventPayout",0);player:SetAttribute("LastEventFans",0);player:SetAttribute("ActivityScore",0);player:SetAttribute("LastActivity",0)
   for key in pairs(Config.Branches)do player:SetAttribute(key.."Level",0)end
   local plot=getPlot(world,i);do
    local ownerSign=plot:FindFirstChild("OwnerSign")
@@ -200,9 +212,15 @@ function M.assign(player,world,Config)
      local rating=tonumber(key)or 0;rating=math.clamp(rating,0,3)
      pp:SetAttribute("EventHype",math.min(100,(pp:GetAttribute("EventHype")or 0)+({0,3,7,12})[rating+1]))
      if rating>=2 then pp:SetAttribute("DJCombo",(pp:GetAttribute("DJCombo")or 0)+1) else pp:SetAttribute("DJCombo",0) end
+    elseif action=="ACTIVITY" then
+     if not pp:GetAttribute("EventActive")then return end
+     local now=os.clock();local last=pp:GetAttribute("LastActivity")or 0;if now-last<4 then return end;pp:SetAttribute("LastActivity",now)
+     local bonus=key=="CROWD"and 4 or(key=="FX"and 5 or(key=="SERVICE"and 3 or 0));if bonus<=0 then return end
+     pp:SetAttribute("EventHype",math.min(100,(pp:GetAttribute("EventHype")or 0)+bonus))
+     pp:SetAttribute("ActivityScore",(pp:GetAttribute("ActivityScore")or 0)+1)
     elseif action=="START_EVENT" then
      if pp:GetAttribute("EventActive") then return end
-     local tutorial=pp:GetAttribute("TutorialStep")or 1;if tutorial==1 then pp:SetAttribute("TutorialStep",2) elseif tutorial==4 then pp:SetAttribute("TutorialStep",5) end;local eventLength=45+math.min(45,math.floor((branchLevel(pp,"Stage")+branchLevel(pp,"Crowd"))/8)*5);pp:SetAttribute("EventActive",true);pp:SetAttribute("EventHype",45);pp:SetAttribute("EventTime",eventLength);pp:SetAttribute("EventVisitors",math.max(8,12+branchLevel(pp,"Crowd")*3+branchLevel(pp,"Marketing")*2));local pi=pp:GetAttribute("PlotIndex");local eventPlot=pi and getPlot(world,pi);if eventPlot then spawnEventCrowd(eventPlot,pp)end
+     local tutorial=pp:GetAttribute("TutorialStep")or 1;if tutorial==1 then pp:SetAttribute("TutorialStep",2) elseif tutorial==4 then pp:SetAttribute("TutorialStep",5) end;local eventLength=45+math.min(45,math.floor((branchLevel(pp,"Stage")+branchLevel(pp,"Crowd"))/8)*5);pp:SetAttribute("EventActive",true);pp:SetAttribute("EventHype",45);pp:SetAttribute("EventTime",eventLength);pp:SetAttribute("EventVisitors",math.max(8,12+branchLevel(pp,"Crowd")*3+branchLevel(pp,"Marketing")*2));local pi=pp:GetAttribute("PlotIndex");local eventPlot=pi and getPlot(world,pi);if eventPlot then spawnEventCrowd(eventPlot,pp);setShowLights(eventPlot,true)end
      task.spawn(function()
       for remaining=(pp:GetAttribute("EventTime")or 45),1,-1 do
        if not pp.Parent then return end
@@ -214,7 +232,7 @@ function M.assign(player,world,Config)
       end
       local hype=pp:GetAttribute("EventHype")or 0;local crowdLv=branchLevel(pp,"Crowd");local standsLv=branchLevel(pp,"Stands")
       local stageLv=branchLevel(pp,"Stage");local soundLv=branchLevel(pp,"Sound");local marketingLv=branchLevel(pp,"Marketing");local staffLv=branchLevel(pp,"Staff");local baseEvent=190+stageLv*20+soundLv*15+crowdLv*17+standsLv*28+marketingLv*18+staffLv*12;local payout=math.floor(baseEvent*(.9+hype/500));local gainedFans=math.floor(12+crowdLv*3+marketingLv*3+hype*.12)
-      pp:SetAttribute("Cash",(pp:GetAttribute("Cash")or 0)+payout);pp:SetAttribute("Fans",(pp:GetAttribute("Fans")or 0)+gainedFans);pp:SetAttribute("LastEventPayout",payout);pp:SetAttribute("LastEventFans",gainedFans);pp:SetAttribute("EventActive",false);pp:SetAttribute("EventTime",0);pp:SetAttribute("EventVisitors",0);if eventPlot then clearEventCrowd(eventPlot)end
+      pp:SetAttribute("Cash",(pp:GetAttribute("Cash")or 0)+payout);pp:SetAttribute("Fans",(pp:GetAttribute("Fans")or 0)+gainedFans);pp:SetAttribute("LastEventPayout",payout);pp:SetAttribute("LastEventFans",gainedFans);pp:SetAttribute("EventActive",false);pp:SetAttribute("EventTime",0);pp:SetAttribute("EventVisitors",0);if eventPlot then clearEventCrowd(eventPlot);setShowLights(eventPlot,false)end
      end)
     elseif action=="BUY" and Config.Branches[key] then
      if pp:GetAttribute("EventActive") then return end
