@@ -295,7 +295,7 @@ function M.assign(player,world,Config)
   if not upgradeRemote then upgradeRemote=Instance.new("RemoteEvent");upgradeRemote.Name="FestivalUpgrade";upgradeRemote.Parent=game:GetService("ReplicatedStorage") end
   if not upgradeRemote:GetAttribute("ServerBound") then
    upgradeRemote:SetAttribute("ServerBound",true)
-   upgradeRemote.OnServerEvent:Connect(function(pp,action,key)
+   upgradeRemote.OnServerEvent:Connect(function(pp,action,key,value)
     if action=="DJ_HIT" then
      if not pp:GetAttribute("EventActive") then return end
      local rating=tonumber(key)or 0;rating=math.clamp(rating,0,3)
@@ -333,7 +333,7 @@ function M.assign(player,world,Config)
      local pi=pp:GetAttribute("PlotIndex");local target=pi and getPlot(world,pi);if target then buildStage(target,pp) end
     elseif action=="STYLE" and styles[key] then pp:SetAttribute("StageStyle",key);local pi=pp:GetAttribute("PlotIndex");local target=pi and getPlot(world,pi);if target then buildStage(target,pp) end
     elseif action=="CUSTOMIZE" then
-     local kind=tostring(key);local value=tostring(select(1,...))
+     local kind=tostring(key);value=tostring(value)
      if kind=="PALETTE" and palettes[value]then pp:SetAttribute("FestivalPalette",value)
      elseif kind=="NAME" and festivalNames[value]then pp:SetAttribute("FestivalName",value)
      elseif kind=="DECOR" and decorModes[value]then pp:SetAttribute("DecorMode",value)else return end
