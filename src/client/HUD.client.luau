@@ -35,6 +35,18 @@ local function refreshPhase()
 end
 for _,a in ipairs({"FestivalPhase","IncomePerTick","NextPhaseNeed","StageLevel","SoundLevel","LightsLevel","FXLevel","CrowdLevel","StandsLevel","MarketingLevel","StaffLevel"})do p:GetAttributeChangedSignal(a):Connect(refreshPhase)end;refreshPhase()
 local cam=Instance.new("TextButton");cam.Position=UDim2.new(0,18,1,-58);cam.Size=UDim2.fromOffset(185,40);cam.BackgroundColor3=Color3.fromRGB(12,15,22);cam.TextColor3=Color3.new(1,1,1);cam.Font=Enum.Font.GothamBold;cam.TextSize=13;cam.Text="CAMÉRA MUSICALE : OFF";cam.Parent=gui;corner(cam);stroke(cam)
+local gfxLevel=2
+local gfx=Instance.new("TextButton");gfx.Position=UDim2.new(0,213,1,-58);gfx.Size=UDim2.fromOffset(170,40);gfx.BackgroundColor3=Color3.fromRGB(12,15,22);gfx.TextColor3=Color3.new(1,1,1);gfx.Font=Enum.Font.GothamBold;gfx.TextSize=13;gfx.Parent=gui;corner(gfx);stroke(gfx)
+local function applyGraphics()
+ local names={"FAIBLE","MOYEN","ÉLEVÉ"};gfx.Text="GRAPHISMES : "..names[gfxLevel]
+ local lighting=game:GetService("Lighting");local bloom=lighting:FindFirstChild("FestivalBloom");local rays=lighting:FindFirstChild("FestivalRays");local atmosphere=lighting:FindFirstChild("FestivalAtmosphere")
+ if bloom then bloom.Enabled=gfxLevel>=2 end;if rays then rays.Enabled=gfxLevel>=3 end
+ if atmosphere then atmosphere.Density=gfxLevel==1 and .04 or (gfxLevel==2 and .08 or .10) end
+ for _,v in workspace:GetDescendants()do
+  if v:IsA("Beam")then v.Enabled=gfxLevel>=2 elseif v:IsA("PointLight")or v:IsA("SpotLight")then v.Enabled=gfxLevel>=2 end
+ end
+end
+gfx.MouseButton1Click:Connect(function()gfxLevel=gfxLevel%3+1;applyGraphics()end);task.defer(applyGraphics)
 
 -- Familiar tycoon navigation rail
 local rail=Instance.new("Frame");rail.Position=UDim2.new(0,18,.5,-145);rail.Size=UDim2.fromOffset(190,310);rail.BackgroundColor3=Color3.fromRGB(10,13,20);rail.BackgroundTransparency=.12;rail.Parent=gui;corner(rail,16);stroke(rail)
