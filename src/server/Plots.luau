@@ -172,18 +172,18 @@ function M.assign(player,world,Config)
      if (pp:GetAttribute("TutorialStep")or 1)==4 then pp:SetAttribute("TutorialStep",5) end
     elseif action=="START_EVENT" then
      if pp:GetAttribute("EventActive") then return end
-     if (pp:GetAttribute("TutorialStep")or 1)==1 then pp:SetAttribute("TutorialStep",2) end;pp:SetAttribute("EventActive",true);pp:SetAttribute("EventHype",35);pp:SetAttribute("EventTime",45);pp:SetAttribute("EventVisitors",math.max(8,12+branchLevel(pp,"Crowd")*4+branchLevel(pp,"Marketing")*3))
+     if (pp:GetAttribute("TutorialStep")or 1)==1 then pp:SetAttribute("TutorialStep",2) end;local eventLength=45+math.min(45,math.floor((branchLevel(pp,"Stage")+branchLevel(pp,"Crowd"))/8)*5);pp:SetAttribute("EventActive",true);pp:SetAttribute("EventHype",45);pp:SetAttribute("EventTime",eventLength);pp:SetAttribute("EventVisitors",math.max(8,12+branchLevel(pp,"Crowd")*3+branchLevel(pp,"Marketing")*2))
      task.spawn(function()
-      for remaining=45,1,-1 do
+      for remaining=(pp:GetAttribute("EventTime")or 45),1,-1 do
        if not pp.Parent then return end
        pp:SetAttribute("EventTime",remaining)
        local hype=pp:GetAttribute("EventHype")or 0
        local crowdLv=branchLevel(pp,"Crowd");local marketing=branchLevel(pp,"Marketing")
-       pp:SetAttribute("EventHype",math.max(0,hype-1+math.floor((crowdLv+marketing)/25)))
+       local quality=branchLevel(pp,"Stage")+branchLevel(pp,"Sound")+branchLevel(pp,"Lights");local floor=math.min(78,42+math.floor(quality/4));pp:SetAttribute("EventHype",math.clamp(math.max(floor,hype-(remaining%6==0 and 1 or 0)),0,100))
        task.wait(1)
       end
       local hype=pp:GetAttribute("EventHype")or 0;local crowdLv=branchLevel(pp,"Crowd");local standsLv=branchLevel(pp,"Stands")
-      local stageLv=branchLevel(pp,"Stage");local soundLv=branchLevel(pp,"Sound");local marketingLv=branchLevel(pp,"Marketing");local baseEvent=260+stageLv*32+soundLv*24+crowdLv*28+standsLv*36+marketingLv*30;local payout=math.floor(baseEvent*(.85+hype/300));local gainedFans=math.floor(20+crowdLv*5+marketingLv*4+hype*.22)
+      local stageLv=branchLevel(pp,"Stage");local soundLv=branchLevel(pp,"Sound");local marketingLv=branchLevel(pp,"Marketing");local staffLv=branchLevel(pp,"Staff");local baseEvent=190+stageLv*20+soundLv*15+crowdLv*17+standsLv*28+marketingLv*18+staffLv*12;local payout=math.floor(baseEvent*(.9+hype/500));local gainedFans=math.floor(12+crowdLv*3+marketingLv*3+hype*.12)
       pp:SetAttribute("Cash",(pp:GetAttribute("Cash")or 0)+payout);pp:SetAttribute("Fans",(pp:GetAttribute("Fans")or 0)+gainedFans);pp:SetAttribute("LastEventPayout",payout);pp:SetAttribute("LastEventFans",gainedFans);pp:SetAttribute("EventActive",false);pp:SetAttribute("EventTime",0);pp:SetAttribute("EventVisitors",0)
      end)
     elseif action=="BUY" and Config.Branches[key] then
@@ -224,7 +224,7 @@ function M.start(world,Config)
   local phase=Config.TycoonPhases[1].name;local nextNeed=nil
   for _,info in ipairs(Config.TycoonPhases)do if total>=info.need then phase=info.name else nextNeed=info.need;break end end
   p:SetAttribute("FestivalPhase",phase);p:SetAttribute("IncomePerTick",income);p:SetAttribute("NextPhaseNeed",nextNeed or -1)
-  p:SetAttribute("Cash",(p:GetAttribute("Cash")or 0)+math.max(2,math.floor(income*.08)))
+  p:SetAttribute("Cash",(p:GetAttribute("Cash")or 0)+math.max(1,math.floor(income*.025)))
  end end end)
 end
 return M
