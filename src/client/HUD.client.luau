@@ -19,13 +19,13 @@ local function refreshObjective()
  local step=p:GetAttribute("TutorialStep")or 1
  local messages={
   [1]="OBJECTIF  •  Lance ton premier festival dès maintenant !",
-  [2]="OBJECTIF  •  Construis le premier niveau de ta SCÈNE",
+  [2]="OBJECTIF  •  Avec tes gains, construis ta première SCÈNE",
   [3]="OBJECTIF  •  Débloque ton premier espace PUBLIC",
-  [4]="OBJECTIF  •  Monte sur scène et utilise les PLATINES",
-  [5]="FESTIVAL LANCÉ  •  Développe-le comme tu veux"
+  [4]="TON FESTIVAL PREND FORME  •  Continue à construire • DJ facultatif",
+  [5]="TON FESTIVAL PREND FORME  •  Continue à construire"
  }
  objective.Text=messages[step]or messages[5]
- objective.Visible=step<=5
+ objective.Visible=step<=4
 end
 p:GetAttributeChangedSignal("TutorialStep"):Connect(refreshObjective);refreshObjective()
 local phase=label(UDim2.new(.5,-190,0,88),UDim2.fromOffset(380,36),"")
@@ -92,7 +92,7 @@ local function openDJ()
  task.spawn(function()while djRunning and djGui do cursorPos+=dir*.012;if cursorPos>=1 then cursorPos=1;dir=-1 elseif cursorPos<=0 then cursorPos=0;dir=1 end;cursor.Position=UDim2.new(cursorPos,0,.5,0);RunService.RenderStepped:Wait()end end)
 end
 
-local launch=Instance.new("TextButton");launch.Size=UDim2.fromOffset(250,54);launch.Position=UDim2.new(.5,-125,1,-122);launch.BackgroundColor3=Color3.fromRGB(92,64,220);launch.TextColor3=Color3.new(1,1,1);launch.Font=Enum.Font.GothamBlack;launch.TextSize=16;launch.Text="LANCER MON FESTIVAL";launch.Parent=gui;corner(launch,14);stroke(launch)
+local launch=Instance.new("TextButton");launch.Size=UDim2.fromOffset(250,54);launch.Position=UDim2.new(.5,-125,1,-122);launch.BackgroundColor3=Color3.fromRGB(92,64,220);launch.TextColor3=Color3.new(1,1,1);launch.Font=Enum.Font.GothamBlack;launch.TextSize=16;launch.Text="OUVRIR MON FESTIVAL";launch.Parent=gui;corner(launch,14);stroke(launch)
 local eventBar=Instance.new("Frame");eventBar.Size=UDim2.fromOffset(360,70);eventBar.Position=UDim2.new(.5,-180,0,142);eventBar.BackgroundColor3=Color3.fromRGB(13,16,23);eventBar.Visible=false;eventBar.Parent=gui;corner(eventBar,14);stroke(eventBar)
 local eventText=Instance.new("TextLabel");eventText.Size=UDim2.new(1,-20,0,30);eventText.Position=UDim2.fromOffset(10,5);eventText.BackgroundTransparency=1;eventText.TextColor3=Color3.new(1,1,1);eventText.Font=Enum.Font.GothamBold;eventText.TextSize=14;eventText.Parent=eventBar
 local hypeBack=Instance.new("Frame");hypeBack.Size=UDim2.new(1,-24,0,16);hypeBack.Position=UDim2.fromOffset(12,43);hypeBack.BackgroundColor3=Color3.fromRGB(35,39,50);hypeBack.Parent=eventBar;corner(hypeBack,8)
@@ -118,6 +118,7 @@ local branchOrder={"Stage","Sound","Lights","FX","Crowd","Stands","Marketing","S
 local branchBase={Stage=90,Sound=70,Lights=80,FX=120,Crowd=65,Stands=100,Marketing=110,Staff=95}
 local branchGrowth={Stage=1.48,Sound=1.46,Lights=1.47,FX=1.52,Crowd=1.44,Stands=1.50,Marketing=1.53,Staff=1.49}
 local branchMax={Stage=25,Sound=30,Lights=30,FX=25,Crowd=40,Stands=30,Marketing=35,Staff=35}
+local branchEffect={Stage="structure + revenus",Sound="sono + revenus",Lights="ambiance visuelle",FX="show + prestige",Crowd="capacité + fans",Stands="revenus événement",Marketing="plus de visiteurs",Staff="efficacité"}
 local function upgradeCost(key,lv)return math.floor(branchBase[key]*(branchGrowth[key]^lv))end
 local function openUpgrades()
  if upgradePanel then upgradePanel:Destroy();upgradePanel=nil;return end
@@ -131,7 +132,7 @@ local function openUpgrades()
   local function redraw()
    local lv=p:GetAttribute(key.."Level")or 0
    if lv>=branchMax[key] then b.Text=branchNames[key].."\nNIVEAU "..lv.." • MAX"
-   else b.Text=branchNames[key].."  •  NIV. "..lv.."\n$"..upgradeCost(key,lv).."  →  NIV. "..(lv+1) end
+   else b.Text=branchNames[key].."  •  NIV. "..lv.."\n"..branchEffect[key].."  •  $"..upgradeCost(key,lv) end
   end
   redraw();p:GetAttributeChangedSignal(key.."Level"):Connect(redraw);b.MouseButton1Click:Connect(function()upgradeRemote:FireServer("BUY",key)end)
  end
