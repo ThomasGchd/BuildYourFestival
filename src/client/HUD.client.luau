@@ -182,6 +182,26 @@ end
 music.OnClientEvent:Connect(function(action,a,b,c)if action=="OPEN"then open(a,b)elseif action=="NOW"then now.Text="MAINSTAGE  •  "..a.."  •  "..b.."  •  file "..c end end)
 local function refresh()stats.Text="$"..tostring(p:GetAttribute("Cash")or 0).."   •   "..tostring(p:GetAttribute("Fans")or 0).." FANS   •   "..totalProgress().." AMELIORATIONS   •   R"..tostring(p:GetAttribute("Prestige")or 0).."   •   TOKENS "..tostring(p:GetAttribute("RebirthTokens")or 0)end
 for _,a in ipairs({"Cash","Fans","Prestige","RebirthTokens","StageLevel","SoundLevel","LightsLevel","FXLevel","CrowdLevel","StandsLevel","MarketingLevel","StaffLevel"})do p:GetAttributeChangedSignal(a):Connect(refresh)end;refresh()
+local danceRemote=ReplicatedStorage:WaitForChild("DanceBattleRemote")
+local danceGui=nil;local danceRun=false
+local function closeDance()danceRun=false;if danceGui then danceGui:Destroy();danceGui=nil end end
+danceRemote.OnClientEvent:Connect(function(action,a,b,c)
+ if action=="START"then
+  closeDance();danceRun=true
+  danceGui=Instance.new("Frame");danceGui.Size=UDim2.fromOffset(520,170);danceGui.Position=UDim2.new(.5,-260,1,-250);danceGui.BackgroundColor3=Color3.fromRGB(12,15,22);danceGui.Parent=gui;corner(danceGui,16);stroke(danceGui)
+  local title=Instance.new("TextLabel");title.Size=UDim2.new(1,-24,0,38);title.Position=UDim2.fromOffset(12,5);title.BackgroundTransparency=1;title.Text="DANCE BATTLE  •  VS "..tostring(a);title.TextColor3=Color3.new(1,1,1);title.Font=Enum.Font.GothamBlack;title.TextSize=17;title.Parent=danceGui
+  local track=Instance.new("Frame");track.Size=UDim2.new(1,-44,0,40);track.Position=UDim2.fromOffset(22,55);track.BackgroundColor3=Color3.fromRGB(35,40,52);track.Parent=danceGui;corner(track,10)
+  local zone=Instance.new("Frame");zone.Size=UDim2.new(.14,0,1,0);zone.BackgroundColor3=Color3.fromRGB(80,205,145);zone.Parent=track;corner(zone,8)
+  local cursor=Instance.new("Frame");cursor.Size=UDim2.fromOffset(8,52);cursor.AnchorPoint=Vector2.new(.5,.5);cursor.BackgroundColor3=Color3.new(1,1,1);cursor.Parent=track;corner(cursor,4)
+  local info=Instance.new("TextLabel");info.Size=UDim2.new(1,-24,0,42);info.Position=UDim2.fromOffset(12,108);info.BackgroundTransparency=1;info.Text="SPACE / CLIC • fais le meilleur score en 25 secondes";info.TextColor3=Color3.fromRGB(215,220,230);info.Font=Enum.Font.GothamBold;info.TextSize=13;info.Parent=danceGui
+  local target=.2+math.random()*.6;local pos=0;local dir=1;local locked=false;zone.Position=UDim2.new(target-.07,0,0,0)
+  local function hit()if locked then return end;locked=true;local d=math.abs(pos-target);local rating=d<.035 and 3 or(d<.075 and 2 or(d<.14 and 1 or 0));danceRemote:FireServer("HIT",rating);info.Text=rating==3 and "PERFECT +50"or rating==2 and "GOOD +25"or rating==1 and "OK +10"or "RATÉ";task.delay(.38,function()if danceGui then target=.15+math.random()*.7;zone.Position=UDim2.new(target-.07,0,0,0);locked=false end end)end
+  local UIS=game:GetService("UserInputService");local conn;conn=UIS.InputBegan:Connect(function(inp,gp)if not gp and inp.KeyCode==Enum.KeyCode.Space and danceGui then hit()end end);track.InputBegan:Connect(function(inp)if inp.UserInputType==Enum.UserInputType.MouseButton1 then hit()end end);danceGui.Destroying:Connect(function()if conn then conn:Disconnect()end end)
+  task.spawn(function()while danceRun and danceGui do pos+=dir*.014;if pos>=1 then pos=1;dir=-1 elseif pos<=0 then pos=0;dir=1 end;cursor.Position=UDim2.new(pos,0,.5,0);RunService.RenderStepped:Wait()end end)
+ elseif action=="END"then
+  closeDance();objective.Text=(c and "DANCE BATTLE GAGNÉ !  +"or"DANCE BATTLE TERMINÉ  +")..(c and "90"or"45").."$  •  "..tostring(a).." - "..tostring(b)
+ end
+end)
 local enabled=false;cam.MouseButton1Click:Connect(function()enabled=not enabled;cam.Text="CAMÉRA MUSICALE : "..(enabled and "ON"or"OFF")end)
 RunService:BindToRenderStep("MusicCam",Enum.RenderPriority.Camera.Value+1,function(dt)
  local world=workspace:FindFirstChild("FestivalWorld");local stage=world and world:FindFirstChild("Mainstage");local screen=stage and stage:FindFirstChild("Screen");local mainSound=screen and screen:FindFirstChild("Music");local root=p.Character and p.Character:FindFirstChild("HumanoidRootPart");local camera=workspace.CurrentCamera
