@@ -5,7 +5,7 @@ local M={}
 function M.start(world,Config)
  local previous=ReplicatedStorage:FindFirstChild("FestivalMusic");if previous then previous:Destroy() end
  local remote=Instance.new("RemoteEvent");remote.Name="FestivalMusic";remote.Parent=ReplicatedStorage
- local queue={};local pending={};local default=1;local playToken=0;local current=nil
+ local queue={};local pending={};local default=1;local playToken=0;local current=nil;local activeStyle=nil;local stylePos=0
  local function play(entry)
   if not entry then return end
   playToken+=1;local token=playToken;current=entry
@@ -25,14 +25,25 @@ function M.start(world,Config)
    end
   end)
  end
+ local function tracksForStyle(style)
+  local out={};for _,e in ipairs(Config.Music)do if e.style==style then table.insert(out,e)end end;return out
+ end
  local function nextTrack()
   if #queue>0 then play(table.remove(queue,1))
+  elseif activeStyle then local tracks=tracksForStyle(activeStyle);if #tracks>0 then stylePos=stylePos%#tracks+1;play(tracks[stylePos])else activeStyle=nil;nextTrack()end
   elseif #Config.Music>0 then local e=Config.Music[default];default=default%#Config.Music+1;play(e) end
  end
  world.sound.Ended:Connect(function()task.delay(.5,nextTrack)end)
  task.delay(1,nextTrack)
- world.console.ProximityPrompt.Triggered:Connect(function(p)remote:FireClient(p,"OPEN",Config.Music,Config.MainstageProductId)end)
+ world.console.ProximityPrompt.Triggered:Connect(function(p)
+  local styles={};local seen={};for _,e in ipairs(Config.Music)do local s=e.style or e.genre;if not seen[s]then seen[s]=true;table.insert(styles,s)end end
+  remote:FireClient(p,"OPEN",Config.Music,Config.MainstageProductId,styles)
+ end)
  remote.OnServerEvent:Connect(function(p,action,index)
+  if action=="STYLE"then
+   local style=tostring(index);local tracks=tracksForStyle(style);if #tracks==0 then return end
+   activeStyle=style;stylePos=0;queue={};nextTrack();remote:FireAllClients("STYLE_NOW",style,#tracks);return
+  end
   if action~="SELECT" or not Config.Music[index] then return end
   pending[p.UserId]=index
   if Config.MainstageProductId==0 then
