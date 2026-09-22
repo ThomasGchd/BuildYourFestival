@@ -29,13 +29,13 @@ local function truss(parent,pos,height)
 end
 function M.build(Config)
  local old=workspace:FindFirstChild("FestivalWorld");if old then old:Destroy() end
- Lighting.ClockTime=17.65;Lighting.Brightness=3;Lighting.ExposureCompensation=.35;Lighting.Ambient=Color3.fromRGB(125,120,145);Lighting.OutdoorAmbient=Color3.fromRGB(150,145,165);Lighting.EnvironmentDiffuseScale=.65;Lighting.EnvironmentSpecularScale=.7
+ Lighting.ClockTime=20.15;Lighting.Brightness=2.7;Lighting.ExposureCompensation=.5;Lighting.Ambient=Color3.fromRGB(105,115,145);Lighting.OutdoorAmbient=Color3.fromRGB(125,135,165);Lighting.EnvironmentDiffuseScale=.7;Lighting.EnvironmentSpecularScale=.8
  local sky=Lighting:FindFirstChild("FestivalSky") or Instance.new("Sky");sky.Name="FestivalSky";sky.CelestialBodiesShown=true;sky.StarCount=3000;sky.SunAngularSize=14;sky.MoonAngularSize=10;sky.Parent=Lighting
  pcall(function() local clouds=workspace.Terrain:FindFirstChild("FestivalClouds") or Instance.new("Clouds");clouds.Name="FestivalClouds";clouds.Cover=.32;clouds.Density=.38;clouds.Color=Color3.fromRGB(225,215,235);clouds.Parent=workspace.Terrain end)
- local bloom=Lighting:FindFirstChild("FestivalBloom") or Instance.new("BloomEffect");bloom.Name="FestivalBloom";bloom.Intensity=.28;bloom.Size=18;bloom.Threshold=1.65;bloom.Parent=Lighting
- local cc=Lighting:FindFirstChild("FestivalColor") or Instance.new("ColorCorrectionEffect");cc.Name="FestivalColor";cc.Brightness=.06;cc.Contrast=.03;cc.Saturation=.04;cc.TintColor=Color3.fromRGB(255,235,225);cc.Parent=Lighting
+ local bloom=Lighting:FindFirstChild("FestivalBloom") or Instance.new("BloomEffect");bloom.Name="FestivalBloom";bloom.Intensity=.12;bloom.Size=12;bloom.Threshold=2.1;bloom.Parent=Lighting
+ local cc=Lighting:FindFirstChild("FestivalColor") or Instance.new("ColorCorrectionEffect");cc.Name="FestivalColor";cc.Brightness=.04;cc.Contrast=.08;cc.Saturation=-.02;cc.TintColor=Color3.fromRGB(220,230,255);cc.Parent=Lighting
  local rays=Lighting:FindFirstChild("FestivalRays") or Instance.new("SunRaysEffect");rays.Name="FestivalRays";rays.Intensity=.025;rays.Spread=.65;rays.Parent=Lighting
- local atmosphere=Lighting:FindFirstChild("FestivalAtmosphere") or Instance.new("Atmosphere");atmosphere.Name="FestivalAtmosphere";atmosphere.Density=.12;atmosphere.Haze=.35;atmosphere.Glare=.08;atmosphere.Color=Color3.fromRGB(205,210,235);atmosphere.Decay=Color3.fromRGB(255,175,135);atmosphere.Parent=Lighting
+ local atmosphere=Lighting:FindFirstChild("FestivalAtmosphere") or Instance.new("Atmosphere");atmosphere.Name="FestivalAtmosphere";atmosphere.Density=.10;atmosphere.Haze=.22;atmosphere.Glare=.04;atmosphere.Color=Color3.fromRGB(175,195,235);atmosphere.Decay=Color3.fromRGB(70,85,125);atmosphere.Parent=Lighting
  local root=Instance.new("Folder");root.Name="FestivalWorld";root.Parent=workspace
  -- Remove the default Roblox baseplate/spawn so nothing shows through our floor.
  -- Keep any Studio baseplate untouched; FestivalWorld fully covers its playable area.
@@ -164,11 +164,11 @@ function M.build(Config)
  end)
  -- laser rig
  local fx=Instance.new("Folder");fx.Name="FX";fx.Parent=stage
- for i=1,28 do
-  local x=-105+(i-1)*(210/27);local head=part(fx,"LaserHead",Vector3.new(1.2,1.2,1.2),CFrame.new(x,69,-495),Color3.fromHSV((i%8)/8,.85,1),Enum.Material.Neon)
+ for i=1,10 do
+  local x=-90+(i-1)*(180/9);local head=part(fx,"LaserHead",Vector3.new(1.2,1.2,1.2),CFrame.new(x,69,-495),Color3.fromHSV((i%8)/8,.85,1),Enum.Material.Neon)
   local target=part(fx,"LaserTarget",Vector3.new(.1,.1,.1),CFrame.new(x*1.25,4,-355-(i%4)*14),Color3.new());target.Transparency=1;target.CanCollide=false
   local a=Instance.new("Attachment");a.Parent=head;local b=Instance.new("Attachment");b.Parent=target
-  local beam=Instance.new("Beam");beam.Attachment0=a;beam.Attachment1=b;beam.Width0=.4;beam.Width1=.08;beam.FaceCamera=true;beam.LightEmission=1;beam.Color=ColorSequence.new(head.Color);beam.Parent=head
+  local beam=Instance.new("Beam");beam.Attachment0=a;beam.Attachment1=b;beam.Width0=.12;beam.Width1=.025;beam.FaceCamera=true;beam.LightEmission=1;beam.Color=ColorSequence.new(head.Color);beam.Parent=head
  end
  local spawn=Instance.new("SpawnLocation");spawn.Name="FestivalSpawn";spawn.Size=Vector3.new(18,1,14);spawn.Position=Vector3.new(0,1,285);spawn.Anchored=true;spawn.Neutral=true;spawn.Transparency=1;spawn.CanCollide=false;spawn.Duration=0;spawn.Parent=root
  return {root=root,plots=plots,stage=stage,screen=screen,sound=sound,console=console}
