@@ -70,6 +70,7 @@ navButton("BOUTIQUES",Color3.fromRGB(255,175,65),function()teleport(Vector3.new(
 local rebirthButton=navButton("RECOMMENCER +",Color3.fromRGB(80,225,155),function() end)
 local upgradesButton
 upgradesButton=navButton("CONSTRUIRE",Color3.fromRGB(255,95,130),function() end)
+local customizeButton=navButton("PERSONNALISER",Color3.fromRGB(120,100,245),function() end)
 
 local upgradeRemote=ReplicatedStorage:WaitForChild("FestivalUpgrade")
 local styleBar=Instance.new("Frame");styleBar.Size=UDim2.fromOffset(780,92);styleBar.Position=UDim2.new(.5,-390,0,190);styleBar.BackgroundTransparency=1;styleBar.Parent=gui
@@ -78,6 +79,27 @@ for _,info in ipairs({{"MAIN STAGE","Mainstage"},{"CAVE","Cave"},{"BOILER 360°"
  local b=Instance.new("TextButton");b.Size=UDim2.fromOffset(102,40);b.BackgroundColor3=Color3.fromRGB(22,27,38);b.TextColor3=Color3.new(1,1,1);b.Font=Enum.Font.GothamBold;b.TextSize=12;b.Text=info[1];b.Parent=styleBar;corner(b,10);stroke(b)
  b.MouseButton1Click:Connect(function()if not p:GetAttribute("EventActive")then ReplicatedStorage:WaitForChild("FestivalUpgrade"):FireServer("STYLE",info[2])end end)
 end
+
+local customizePanel
+local function openCustomize()
+ if customizePanel then customizePanel:Destroy();customizePanel=nil;return end
+ customizePanel=Instance.new("Frame");customizePanel.Size=UDim2.fromOffset(610,470);customizePanel.Position=UDim2.new(.5,-305,.5,-235);customizePanel.BackgroundColor3=Color3.fromRGB(13,16,23);customizePanel.Parent=gui;corner(customizePanel,18);stroke(customizePanel)
+ local head=Instance.new("TextLabel");head.Size=UDim2.new(1,-70,0,55);head.Position=UDim2.fromOffset(20,0);head.BackgroundTransparency=1;head.Text="PERSONNALISE TON FESTIVAL";head.TextXAlignment=Enum.TextXAlignment.Left;head.TextColor3=Color3.new(1,1,1);head.Font=Enum.Font.GothamBlack;head.TextSize=19;head.Parent=customizePanel
+ local close=Instance.new("TextButton");close.Size=UDim2.fromOffset(40,40);close.Position=UDim2.new(1,-50,0,8);close.Text="X";close.BackgroundColor3=Color3.fromRGB(32,36,47);close.TextColor3=Color3.new(1,1,1);close.Parent=customizePanel;corner(close,9);close.MouseButton1Click:Connect(function()customizePanel:Destroy();customizePanel=nil end)
+ local body=Instance.new("Frame");body.BackgroundTransparency=1;body.Position=UDim2.fromOffset(18,62);body.Size=UDim2.new(1,-36,1,-78);body.Parent=customizePanel
+ local lay=Instance.new("UIListLayout");lay.Padding=UDim.new(0,10);lay.Parent=body
+ local function row(title,options,kind)
+  local r=Instance.new("Frame");r.Size=UDim2.new(1,0,0,82);r.BackgroundColor3=Color3.fromRGB(22,27,38);r.Parent=body;corner(r,12)
+  local l=Instance.new("TextLabel");l.Size=UDim2.new(1,-16,0,28);l.Position=UDim2.fromOffset(10,3);l.BackgroundTransparency=1;l.Text=title;l.TextXAlignment=Enum.TextXAlignment.Left;l.TextColor3=Color3.fromRGB(220,225,235);l.Font=Enum.Font.GothamBold;l.TextSize=12;l.Parent=r
+  local x=8
+  for _,o in ipairs(options)do local b=Instance.new("TextButton");b.Size=UDim2.fromOffset(math.max(70,#o*8+22),38);b.Position=UDim2.fromOffset(x,35);b.BackgroundColor3=Color3.fromRGB(38,44,58);b.TextColor3=Color3.new(1,1,1);b.Font=Enum.Font.GothamBold;b.TextSize=11;b.Text=o;b.Parent=r;corner(b,9);b.MouseButton1Click:Connect(function()if not p:GetAttribute("EventActive")then upgradeRemote:FireServer("CUSTOMIZE",kind,o)end end);x+=b.Size.X.Offset+7 end
+ end
+ row("NOM DU FESTIVAL",{"NOVA","PULSE","ECLIPSE","RAVE","IMPACT","HORIZON","VOID","UNITY"},"NAME")
+ row("COULEURS",{"Purple","Red","Green","Blue","Pink","Mono"},"PALETTE")
+ row("AMBIANCE / DÉCOR",{"Festive","Industrial","Clean"},"DECOR")
+ local hint=Instance.new("TextLabel");hint.Size=UDim2.new(1,0,0,50);hint.BackgroundTransparency=1;hint.Text="Tout s'applique directement sur ton slot. Plus de choix seront débloqués avec la progression.";hint.TextWrapped=true;hint.TextColor3=Color3.fromRGB(165,175,195);hint.Font=Enum.Font.Gotham;hint.TextSize=12;hint.Parent=body
+end
+customizeButton.MouseButton1Click:Connect(openCustomize)
 
 local djGui=nil;local djRunning=false;local target=.5;local dir=1;local cursorPos=0
 local function closeDJ()djRunning=false;if djGui then djGui:Destroy();djGui=nil end end
