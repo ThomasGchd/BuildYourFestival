@@ -28,6 +28,13 @@ local function refreshObjective()
  objective.Visible=step<=5
 end
 p:GetAttributeChangedSignal("TutorialStep"):Connect(refreshObjective);refreshObjective()
+local phase=label(UDim2.new(.5,-190,0,88),UDim2.fromOffset(380,42),"")
+phase.TextSize=13
+local function refreshPhase()
+ local name=p:GetAttribute("FestivalPhase")or"DEPART";local income=p:GetAttribute("IncomePerTick")or 0;local need=p:GetAttribute("NextPhaseNeed")or-1;local total=totalProgress()
+ phase.Text=name.."   •   +$"..income.."/2s"..(need>0 and ("   •   PROCHAINE ETAPE "..total.."/"..need)or"   •   MAX")
+end
+for _,a in ipairs({"FestivalPhase","IncomePerTick","NextPhaseNeed","StageLevel","SoundLevel","LightsLevel","FXLevel","CrowdLevel","StandsLevel","MarketingLevel","StaffLevel"})do p:GetAttributeChangedSignal(a):Connect(refreshPhase)end;refreshPhase()
 local cam=Instance.new("TextButton");cam.Position=UDim2.new(0,18,1,-58);cam.Size=UDim2.fromOffset(185,40);cam.BackgroundColor3=Color3.fromRGB(12,15,22);cam.TextColor3=Color3.new(1,1,1);cam.Font=Enum.Font.GothamBold;cam.TextSize=13;cam.Text="CAMÉRA MUSICALE : OFF";cam.Parent=gui;corner(cam);stroke(cam)
 
 -- Familiar tycoon navigation rail
@@ -49,16 +56,22 @@ navButton("MA BASE",Color3.fromRGB(70,210,255),function()
 end)
 navButton("MAINSTAGE",Color3.fromRGB(190,90,255),function()teleport(Vector3.new(0,1,-345))end)
 navButton("BOUTIQUES",Color3.fromRGB(255,175,65),function()teleport(Vector3.new(145,1,-375))end)
-navButton("RENAISSANCE",Color3.fromRGB(80,225,155),function()
- local world=workspace:FindFirstChild("FestivalWorld");local plots=world and world:FindFirstChild("Plots");local i=p:GetAttribute("PlotIndex");local plot=i and plots and plots:FindFirstChild("Plot"..i);local pad=plot and plot:FindFirstChild("PrestigePad");if pad then teleport(pad.Position)end
-end)
+local rebirthButton=navButton("RENAISSANCE",Color3.fromRGB(80,225,155),function() end)
 local upgradesButton
 upgradesButton=navButton("AMELIORATIONS",Color3.fromRGB(255,95,130),function() end)
 
 local upgradeRemote=ReplicatedStorage:WaitForChild("FestivalUpgrade")
+rebirthButton.MouseButton1Click:Connect(function()
+ local prestige=p:GetAttribute("Prestige")or 0;local price=250000*((prestige+1)^2)
+ if (p:GetAttribute("Cash")or 0)>=price then upgradeRemote:FireServer("REBIRTH") else objective.Text="RENAISSANCE • Il faut $"..price end
+end)
 local upgradePanel
 local branchNames={Stage="SCENE",Sound="SON",Lights="ECLAIRAGE",FX="EFFETS",Crowd="PUBLIC",Stands="STANDS",Marketing="MARKETING",Staff="EQUIPE"}
 local branchOrder={"Stage","Sound","Lights","FX","Crowd","Stands","Marketing","Staff"}
+local branchBase={Stage=90,Sound=70,Lights=80,FX=120,Crowd=65,Stands=100,Marketing=110,Staff=95}
+local branchGrowth={Stage=1.48,Sound=1.46,Lights=1.47,FX=1.52,Crowd=1.44,Stands=1.50,Marketing=1.53,Staff=1.49}
+local branchMax={Stage=25,Sound=30,Lights=30,FX=25,Crowd=40,Stands=30,Marketing=35,Staff=35}
+local function upgradeCost(key,lv)return math.floor(branchBase[key]*(branchGrowth[key]^lv))end
 local function openUpgrades()
  if upgradePanel then upgradePanel:Destroy();upgradePanel=nil;return end
  upgradePanel=Instance.new("Frame");upgradePanel.Size=UDim2.fromOffset(520,520);upgradePanel.Position=UDim2.new(.5,-260,.5,-260);upgradePanel.BackgroundColor3=Color3.fromRGB(13,16,23);upgradePanel.BorderSizePixel=0;upgradePanel.Parent=gui;corner(upgradePanel,16);stroke(upgradePanel)
@@ -68,7 +81,11 @@ local function openUpgrades()
  local layout=Instance.new("UIGridLayout");layout.CellSize=UDim2.new(.5,-7,0,92);layout.CellPadding=UDim2.fromOffset(12,12);layout.Parent=grid
  for _,key in ipairs(branchOrder)do
   local b=Instance.new("TextButton");b.BackgroundColor3=Color3.fromRGB(24,28,38);b.TextColor3=Color3.new(1,1,1);b.Font=Enum.Font.GothamBold;b.TextSize=14;b.TextWrapped=true;b.Parent=grid;corner(b,12);stroke(b)
-  local function redraw()local lv=p:GetAttribute(key.."Level")or 0;b.Text=branchNames[key].."\nNIVEAU "..lv.."\nCLIQUER POUR AMELIORER"end
+  local function redraw()
+   local lv=p:GetAttribute(key.."Level")or 0
+   if lv>=branchMax[key] then b.Text=branchNames[key].."\nNIVEAU "..lv.." • MAX"
+   else b.Text=branchNames[key].."  •  NIV. "..lv.."\n$"..upgradeCost(key,lv).."  →  NIV. "..(lv+1) end
+  end
   redraw();p:GetAttributeChangedSignal(key.."Level"):Connect(redraw);b.MouseButton1Click:Connect(function()upgradeRemote:FireServer("BUY",key)end)
  end
 end
