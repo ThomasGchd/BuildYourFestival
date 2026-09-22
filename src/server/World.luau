@@ -124,6 +124,15 @@ function M.build(Config)
  booth(root,Vector3.new(78,.5,205),"BAR",Color3.fromRGB(82,164,255))
  booth(root,Vector3.new(-78,.5,-280),"MERCH",Color3.fromRGB(178,91,255))
  booth(root,Vector3.new(78,.5,-280),"INFO",Color3.fromRGB(65,214,158))
+ -- Social minigame zone: visible from the avenue, shared by every player.
+ local games=Instance.new("Model");games.Name="DanceBattleArena";games.Parent=root
+ part(games,"DanceFloor",Vector3.new(54,.5,36),CFrame.new(0,.35,-300),Color3.fromRGB(28,31,39),Enum.Material.Slate)
+ for _,x in ipairs({-24,24})do part(games,"GameTruss",Vector3.new(2,16,2),CFrame.new(x,8,-300),Color3.fromRGB(70,73,80),Enum.Material.Metal)end
+ part(games,"GameTop",Vector3.new(50,2,2),CFrame.new(0,16,-300),Color3.fromRGB(70,73,80),Enum.Material.Metal)
+ textSign(games,Vector3.new(0,13.5,-298.8),Vector3.new(30,4,.6),"DANCE BATTLE")
+ local q1=part(games,"Queue1",Vector3.new(9,.25,9),CFrame.new(-12,.7,-286),Color3.fromRGB(116,88,235),Enum.Material.Neon);q1.CanCollide=false
+ local q2=part(games,"Queue2",Vector3.new(9,.25,9),CFrame.new(12,.7,-286),Color3.fromRGB(55,205,225),Enum.Material.Neon);q2.CanCollide=false
+ for i,q in ipairs({q1,q2})do local pr=Instance.new("ProximityPrompt");pr.Name="DanceQueuePrompt";pr.ActionText="REJOINDRE";pr.ObjectText="DANCE BATTLE • JOUEUR "..i;pr.RequiresLineOfSight=false;pr.MaxActivationDistance=10;pr.Parent=q end
  -- Mainstage village: useful shops around the arena without blocking the crowd.
  booth(root,Vector3.new(-150,.5,-345),"DRINKS",Color3.fromRGB(55,160,255))
  booth(root,Vector3.new(-150,.5,-375),"FOOD",Color3.fromRGB(245,112,64))
