@@ -20,7 +20,9 @@ local function open(items,productId)
  for i,e in ipairs(items) do local b=Instance.new("TextButton");b.Size=UDim2.new(1,0,0,55);b.Text=e.name.." • "..e.genre..(productId==0 and " • TEST" or " • ROBUX");b.Font=Enum.Font.GothamBold;b.TextSize=15;b.Parent=panel;b.MouseButton1Click:Connect(function()music:FireServer("SELECT",i);panel:Destroy();panel=nil end) end
 end
 music.OnClientEvent:Connect(function(action,a,b,c)if action=="OPEN" then open(a,b)elseif action=="NOW" then now.Text="MAINSTAGE • "..a.." • choisi par "..b.." • file "..c end end)
-local function refresh()stats.Text="$"..tostring(p:GetAttribute("Cash") or 0).."  •  "..tostring(p:GetAttribute("Fans") or 0).." FANS  •  NIV."..tostring(p:GetAttribute("StageLevel") or 0)end
+local function refresh()stats.Text="💵 $"..tostring(player:GetAttribute("Cash")or 0).."   👥 "..tostring(player:GetAttribute("Fans")or 0).."   ⭐ "..tostring(totalProgress()).." upgrades   ♻ "..tostring(player:GetAttribute("Prestige")or 0).." renaissances   ♦ "..tostring(player:GetAttribute("RebirthTokens")or 0).." tokens"
+ -- legacy assignment disabled
+ -- stats.Text="$"..tostring(p:GetAttribute("Cash") or 0).."  •  "..tostring(p:GetAttribute("Fans") or 0).." FANS  •  NIV."..tostring(p:GetAttribute("StageLevel") or 0)end
 for _,a in ipairs({"Cash","Fans","StageLevel"})do p:GetAttributeChangedSignal(a):Connect(refresh)end;refresh()
 local enabled=false;cam.MouseButton1Click:Connect(function()enabled=not enabled;cam.Text="CAMÉRA MUSICALE : "..(enabled and "ON" or "OFF")end)
 RunService:BindToRenderStep("MusicCam",Enum.RenderPriority.Camera.Value+1,function(dt)
