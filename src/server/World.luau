@@ -31,6 +31,8 @@ function M.build(Config)
  local old=workspace:FindFirstChild("FestivalWorld");if old then old:Destroy() end
  Lighting.ClockTime=19.3;Lighting.Brightness=2;Lighting.Ambient=Color3.fromRGB(80,84,110);Lighting.OutdoorAmbient=Color3.fromRGB(92,95,120)
  local bloom=Lighting:FindFirstChild("FestivalBloom") or Instance.new("BloomEffect");bloom.Name="FestivalBloom";bloom.Intensity=.28;bloom.Size=18;bloom.Threshold=1.65;bloom.Parent=Lighting
+ local cc=Lighting:FindFirstChild("FestivalColor") or Instance.new("ColorCorrectionEffect");cc.Name="FestivalColor";cc.Brightness=.015;cc.Contrast=.08;cc.Saturation=.08;cc.TintColor=Color3.fromRGB(235,240,255);cc.Parent=Lighting
+ local rays=Lighting:FindFirstChild("FestivalRays") or Instance.new("SunRaysEffect");rays.Name="FestivalRays";rays.Intensity=.025;rays.Spread=.65;rays.Parent=Lighting
  local atmosphere=Lighting:FindFirstChild("FestivalAtmosphere") or Instance.new("Atmosphere");atmosphere.Name="FestivalAtmosphere";atmosphere.Density=.16;atmosphere.Haze=.65;atmosphere.Parent=Lighting
  local root=Instance.new("Folder");root.Name="FestivalWorld";root.Parent=workspace
  -- Remove the default Roblox baseplate/spawn so nothing shows through our floor.
