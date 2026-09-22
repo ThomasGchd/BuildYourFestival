@@ -170,7 +170,7 @@ function M.build(Config)
   local a=Instance.new("Attachment");a.Parent=head;local b=Instance.new("Attachment");b.Parent=target
   local beam=Instance.new("Beam");beam.Attachment0=a;beam.Attachment1=b;beam.Width0=.4;beam.Width1=.08;beam.FaceCamera=true;beam.LightEmission=1;beam.Color=ColorSequence.new(head.Color);beam.Parent=head
  end
- local spawn=Instance.new("SpawnLocation");spawn.Name="FestivalSpawn";spawn.Size=Vector3.new(18,1,14);spawn.Position=Vector3.new(0,1,285);spawn.Anchored=true;spawn.Neutral=true;spawn.Parent=root
+ local spawn=Instance.new("SpawnLocation");spawn.Name="FestivalSpawn";spawn.Size=Vector3.new(18,1,14);spawn.Position=Vector3.new(0,1,285);spawn.Anchored=true;spawn.Neutral=true;spawn.Transparency=1;spawn.CanCollide=false;spawn.Duration=0;spawn.Parent=root
  return {root=root,plots=plots,stage=stage,screen=screen,sound=sound,console=console}
 end
 return M
