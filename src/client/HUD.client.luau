@@ -79,6 +79,7 @@ local function openDJ()
  djRunning=true;cursorPos=0;dir=1;target=.2+math.random()*.6
  djGui=Instance.new("Frame");djGui.Size=UDim2.fromOffset(560,190);djGui.Position=UDim2.new(.5,-280,1,-285);djGui.BackgroundColor3=Color3.fromRGB(12,15,22);djGui.Parent=gui;corner(djGui,16);stroke(djGui)
  local title=Instance.new("TextLabel");title.Size=UDim2.new(1,-24,0,42);title.Position=UDim2.fromOffset(12,4);title.BackgroundTransparency=1;title.Text="TRANSITION DJ  •  SPACE / CLIC AU BON MOMENT";title.TextColor3=Color3.new(1,1,1);title.Font=Enum.Font.GothamBold;title.TextSize=15;title.Parent=djGui
+ local leave=Instance.new("TextButton");leave.Size=UDim2.fromOffset(38,32);leave.Position=UDim2.new(1,-46,0,8);leave.Text="X";leave.BackgroundColor3=Color3.fromRGB(38,42,54);leave.TextColor3=Color3.new(1,1,1);leave.Font=Enum.Font.GothamBold;leave.Parent=djGui;corner(leave,8);leave.MouseButton1Click:Connect(closeDJ)
  local track=Instance.new("Frame");track.Size=UDim2.new(1,-48,0,38);track.Position=UDim2.fromOffset(24,58);track.BackgroundColor3=Color3.fromRGB(34,39,52);track.Parent=djGui;corner(track,10)
  local zone=Instance.new("Frame");zone.Size=UDim2.new(.16,0,1,0);zone.Position=UDim2.new(target-.08,0,0,0);zone.BackgroundColor3=Color3.fromRGB(70,190,125);zone.Parent=track;corner(zone,8)
  local perfect=Instance.new("Frame");perfect.Size=UDim2.new(.055,0,1,0);perfect.Position=UDim2.new(.4725,0,0,0);perfect.BackgroundColor3=Color3.fromRGB(245,205,75);perfect.Parent=zone;corner(perfect,6)
@@ -103,6 +104,14 @@ local function openDJ()
  task.spawn(function()while djRunning and djGui do cursorPos+=dir*.012;if cursorPos>=1 then cursorPos=1;dir=-1 elseif cursorPos<=0 then cursorPos=0;dir=1 end;cursor.Position=UDim2.new(cursorPos,0,.5,0);RunService.RenderStepped:Wait()end end)
 end
 
+local activities=Instance.new("Frame");activities.Size=UDim2.fromOffset(430,48);activities.Position=UDim2.new(.5,-215,1,-190);activities.BackgroundTransparency=1;activities.Visible=false;activities.Parent=gui
+local actLayout=Instance.new("UIListLayout");actLayout.FillDirection=Enum.FillDirection.Horizontal;actLayout.HorizontalAlignment=Enum.HorizontalAlignment.Center;actLayout.Padding=UDim.new(0,8);actLayout.Parent=activities
+local activityCooldown=false
+local function activityButton(label,key)
+ local b=Instance.new("TextButton");b.Size=UDim2.fromOffset(132,44);b.BackgroundColor3=Color3.fromRGB(22,27,38);b.TextColor3=Color3.new(1,1,1);b.Font=Enum.Font.GothamBold;b.TextSize=12;b.Text=label;b.Parent=activities;corner(b,10)
+ b.MouseButton1Click:Connect(function()if activityCooldown or not p:GetAttribute("EventActive")then return end;activityCooldown=true;upgradeRemote:FireServer("ACTIVITY",key);b.Text="✓ BONUS !";task.delay(4,function()if b.Parent then b.Text=label end;activityCooldown=false end)end)
+end
+activityButton("🙌 CHAUFFER PUBLIC","CROWD");activityButton("✨ LANCER EFFETS","FX");activityButton("🥤 AIDER STANDS","SERVICE")
 local launch=Instance.new("TextButton");launch.Size=UDim2.fromOffset(300,64);launch.Position=UDim2.new(.5,-150,1,-132);launch.BackgroundColor3=Color3.fromRGB(92,64,220);launch.TextColor3=Color3.new(1,1,1);launch.Font=Enum.Font.GothamBlack;launch.TextSize=18;launch.Text="▶ OUVRIR MON FESTIVAL";launch.Parent=gui;corner(launch,14);stroke(launch)
 local eventBar=Instance.new("Frame");eventBar.Size=UDim2.fromOffset(360,70);eventBar.Position=UDim2.new(.5,-180,0,142);eventBar.BackgroundColor3=Color3.fromRGB(13,16,23);eventBar.Visible=false;eventBar.Parent=gui;corner(eventBar,14);stroke(eventBar)
 local eventText=Instance.new("TextLabel");eventText.Size=UDim2.new(1,-20,0,30);eventText.Position=UDim2.fromOffset(10,5);eventText.BackgroundTransparency=1;eventText.TextColor3=Color3.new(1,1,1);eventText.Font=Enum.Font.GothamBold;eventText.TextSize=14;eventText.Parent=eventBar
@@ -111,7 +120,7 @@ local hypeFill=Instance.new("Frame");hypeFill.Size=UDim2.fromScale(.2,1);hypeFil
 launch.MouseButton1Click:Connect(function()upgradeRemote:FireServer("START_EVENT")end)
 local function refreshEvent()
  local active=p:GetAttribute("EventActive")==true;local hype=p:GetAttribute("EventHype")or 0;local time=p:GetAttribute("EventTime")or 0
- eventBar.Visible=active;launch.Visible=not active
+ eventBar.Visible=active;launch.Visible=not active;activities.Visible=active
  eventText.Text="FESTIVAL OUVERT  •  "..time.."s  •  AMBIANCE "..hype.."%  •  "..tostring(p:GetAttribute("EventVisitors")or 0).." VISITEURS"
  hypeFill.Size=UDim2.fromScale(math.clamp(hype/100,0,1),1)
  if active then objective.Text="TON FESTIVAL EST OUVERT ! • Regarde les visiteurs arriver • DJ = bonus facultatif" end
