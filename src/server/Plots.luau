@@ -107,7 +107,7 @@ function M.assign(player,world,Config)
      if (pp:GetAttribute("TutorialStep")or 1)==4 then pp:SetAttribute("TutorialStep",5) end
     elseif action=="START_EVENT" then
      if pp:GetAttribute("EventActive") then return end
-     pp:SetAttribute("EventActive",true);pp:SetAttribute("EventHype",20);pp:SetAttribute("EventTime",45)
+     pp:SetAttribute("EventActive",true);pp:SetAttribute("EventHype",35);pp:SetAttribute("EventTime",45);pp:SetAttribute("EventVisitors",math.max(8,12+branchLevel(pp,"Crowd")*4+branchLevel(pp,"Marketing")*3))
      task.spawn(function()
       for remaining=45,1,-1 do
        if not pp.Parent then return end
@@ -119,7 +119,7 @@ function M.assign(player,world,Config)
       end
       local hype=pp:GetAttribute("EventHype")or 0;local crowdLv=branchLevel(pp,"Crowd");local standsLv=branchLevel(pp,"Stands")
       local payout=math.floor(180+(hype*5)+(crowdLv*22)+(standsLv*28));local gainedFans=math.floor(15+hype*.55+crowdLv*4)
-      pp:SetAttribute("Cash",(pp:GetAttribute("Cash")or 0)+payout);pp:SetAttribute("Fans",(pp:GetAttribute("Fans")or 0)+gainedFans);pp:SetAttribute("LastEventPayout",payout);pp:SetAttribute("EventActive",false);pp:SetAttribute("EventTime",0)
+      pp:SetAttribute("Cash",(pp:GetAttribute("Cash")or 0)+payout);pp:SetAttribute("Fans",(pp:GetAttribute("Fans")or 0)+gainedFans);pp:SetAttribute("LastEventPayout",payout);pp:SetAttribute("EventActive",false);pp:SetAttribute("EventTime",0);pp:SetAttribute("EventVisitors",0)
      end)
     elseif action=="BUY" and Config.Branches[key] then
      local lv=branchLevel(pp,key);local branch=Config.Branches[key];if lv>=branch.max then return end
