@@ -140,9 +140,9 @@ p:GetAttributeChangedSignal("EventActive"):Connect(function()if not p:GetAttribu
 local upgradePanel
 local branchNames={Stage="SCENE",Sound="SON",Lights="ECLAIRAGE",FX="EFFETS",Crowd="PUBLIC",Stands="STANDS",Marketing="MARKETING",Staff="EQUIPE"}
 local branchOrder={"Stage","Sound","Lights","FX","Crowd","Stands","Marketing","Staff"}
-local branchBase={Stage=90,Sound=70,Lights=80,FX=120,Crowd=65,Stands=100,Marketing=110,Staff=95}
-local branchGrowth={Stage=1.48,Sound=1.46,Lights=1.47,FX=1.52,Crowd=1.44,Stands=1.50,Marketing=1.53,Staff=1.49}
-local branchMax={Stage=25,Sound=30,Lights=30,FX=25,Crowd=40,Stands=30,Marketing=35,Staff=35}
+local branchBase={Stage=100,Sound=80,Lights=90,FX=130,Crowd=75,Stands=110,Marketing=120,Staff=105}
+local branchGrowth={Stage=1.34,Sound=1.32,Lights=1.33,FX=1.35,Crowd=1.30,Stands=1.34,Marketing=1.34,Staff=1.33}
+local branchMax={Stage=40,Sound=40,Lights=40,FX=35,Crowd=50,Stands=40,Marketing=45,Staff=45}
 local branchEffect={Stage="une scène plus grande",Sound="un meilleur son",Lights="de belles lumières",FX="un show plus impressionnant",Crowd="plus de visiteurs",Stands="plus d'argent",Marketing="attire plus de monde",Staff="aide ton festival"}
 local function upgradeCost(key,lv)return math.floor(branchBase[key]*(branchGrowth[key]^lv))end
 local function openUpgrades()
