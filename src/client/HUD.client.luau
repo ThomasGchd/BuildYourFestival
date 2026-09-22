@@ -208,13 +208,25 @@ local function openUpgrades()
 end
 upgradesButton.MouseButton1Click:Connect(openUpgrades)
 local music=ReplicatedStorage:WaitForChild("FestivalMusic");local panel
-local function open(items,productId)
+local function openMusic(items,productId,styles)
  if panel then panel:Destroy()end
- panel=Instance.new("Frame");panel.Size=UDim2.fromOffset(440,420);panel.Position=UDim2.new(.5,-220,.5,-210);panel.BackgroundColor3=Color3.fromRGB(12,15,22);panel.Parent=gui;corner(panel,16);stroke(panel)
- local list2=Instance.new("UIListLayout");list2.Padding=UDim.new(0,6);list2.Parent=panel
- for i,e in ipairs(items)do local b=Instance.new("TextButton");b.Size=UDim2.new(1,-16,0,40);b.Text=e.name.."  •  "..e.genre..(productId==0 and "  •  TEST" or "  •  ROBUX");b.BackgroundColor3=Color3.fromRGB(25,30,42);b.TextColor3=Color3.new(1,1,1);b.Font=Enum.Font.GothamBold;b.TextSize=13;b.Parent=panel;corner(b,8);b.MouseButton1Click:Connect(function()music:FireServer("SELECT",i);panel:Destroy();panel=nil end)end
+ panel=Instance.new("Frame");panel.Size=UDim2.fromOffset(560,430);panel.Position=UDim2.new(.5,-280,.5,-215);panel.BackgroundColor3=Color3.fromRGB(12,15,22);panel.Parent=gui;corner(panel,16);stroke(panel)
+ local head=Instance.new("TextLabel");head.Size=UDim2.new(1,-70,0,48);head.Position=UDim2.fromOffset(18,0);head.BackgroundTransparency=1;head.Text="MUSIQUE DU MAINSTAGE";head.TextXAlignment=Enum.TextXAlignment.Left;head.TextColor3=Color3.new(1,1,1);head.Font=Enum.Font.GothamBlack;head.TextSize=18;head.Parent=panel
+ local close=Instance.new("TextButton");close.Size=UDim2.fromOffset(38,34);close.Position=UDim2.new(1,-48,0,8);close.Text="X";close.BackgroundColor3=Color3.fromRGB(32,36,47);close.TextColor3=Color3.new(1,1,1);close.Parent=panel;corner(close,9);close.MouseButton1Click:Connect(function()panel:Destroy();panel=nil end)
+ local tabs=Instance.new("ScrollingFrame");tabs.Size=UDim2.new(1,-24,0,50);tabs.Position=UDim2.fromOffset(12,52);tabs.BackgroundTransparency=1;tabs.BorderSizePixel=0;tabs.ScrollBarThickness=3;tabs.ScrollingDirection=Enum.ScrollingDirection.X;tabs.CanvasSize=UDim2.fromOffset(math.max(520,#styles*112),0);tabs.Parent=panel
+ local tl=Instance.new("UIListLayout");tl.FillDirection=Enum.FillDirection.Horizontal;tl.Padding=UDim.new(0,7);tl.Parent=tabs
+ local songs=Instance.new("ScrollingFrame");songs.Size=UDim2.new(1,-24,1,-116);songs.Position=UDim2.fromOffset(12,108);songs.BackgroundTransparency=1;songs.BorderSizePixel=0;songs.ScrollBarThickness=5;songs.AutomaticCanvasSize=Enum.AutomaticSize.Y;songs.CanvasSize=UDim2.new();songs.Parent=panel
+ local sl=Instance.new("UIListLayout");sl.Padding=UDim.new(0,7);sl.Parent=songs
+ local function showStyle(style)
+  for _,v in ipairs(songs:GetChildren())do if v:IsA("GuiButton")then v:Destroy()end end
+  for i,e in ipairs(items)do if (e.style or e.genre)==style then local b=Instance.new("TextButton");b.Size=UDim2.new(1,-8,0,48);b.BackgroundColor3=Color3.fromRGB(25,30,42);b.TextColor3=Color3.new(1,1,1);b.Font=Enum.Font.GothamBold;b.TextSize=13;b.Text=e.name.."  •  "..e.genre;b.Parent=songs;corner(b,9);b.MouseButton1Click:Connect(function()music:FireServer("SELECT",i)end)end end
+ end
+ for _,style in ipairs(styles)do local b=Instance.new("TextButton");b.Size=UDim2.fromOffset(105,40);b.BackgroundColor3=Color3.fromRGB(31,36,49);b.TextColor3=Color3.new(1,1,1);b.Font=Enum.Font.GothamBold;b.TextSize=10;b.Text=style;b.Parent=tabs;corner(b,9);b.MouseButton1Click:Connect(function()showStyle(style);music:FireServer("STYLE",style)end)end
+ if styles[1]then showStyle(styles[1])end
 end
-music.OnClientEvent:Connect(function(action,a,b,c)if action=="OPEN"then open(a,b)elseif action=="NOW"then now.Text="MAINSTAGE  •  "..a.."  •  "..b.."  •  file "..c end end)
+music.OnClientEvent:Connect(function(action,a,b,c)
+ if action=="OPEN"then openMusic(a,b,c or{})elseif action=="NOW"then now.Text="MAINSTAGE  •  "..a.."  •  "..b.."  •  file "..c elseif action=="STYLE_NOW"then now.Text="MAINSTAGE  •  RADIO "..a.."  •  "..b.." TITRES"end
+end)
 local function refresh()stats.Text="$"..tostring(p:GetAttribute("Cash")or 0).."   •   "..tostring(p:GetAttribute("Fans")or 0).." FANS   •   "..totalProgress().." AMELIORATIONS   •   R"..tostring(p:GetAttribute("Prestige")or 0).."   •   TOKENS "..tostring(p:GetAttribute("RebirthTokens")or 0)end
 for _,a in ipairs({"Cash","Fans","Prestige","RebirthTokens","StageLevel","SoundLevel","LightsLevel","FXLevel","CrowdLevel","StandsLevel","MarketingLevel","StaffLevel"})do p:GetAttributeChangedSignal(a):Connect(refresh)end;refresh()
 -- Social dances: one compact button opens a small dance selector.
