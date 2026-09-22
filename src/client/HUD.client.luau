@@ -34,11 +34,11 @@ local function refreshPhase()
  phase.Text=name..(need>0 and ("   •   "..total.."/"..need.." POUR GRANDIR")or"   •   FESTIVAL MAX")
 end
 for _,a in ipairs({"FestivalPhase","IncomePerTick","NextPhaseNeed","StageLevel","SoundLevel","LightsLevel","FXLevel","CrowdLevel","StandsLevel","MarketingLevel","StaffLevel"})do p:GetAttributeChangedSignal(a):Connect(refreshPhase)end;refreshPhase()
-local cam=Instance.new("TextButton");cam.Position=UDim2.new(0,18,1,-58);cam.Size=UDim2.fromOffset(185,40);cam.BackgroundColor3=Color3.fromRGB(12,15,22);cam.TextColor3=Color3.new(1,1,1);cam.Font=Enum.Font.GothamBold;cam.TextSize=13;cam.Text="CAMÉRA MUSICALE : OFF";cam.Parent=gui;corner(cam);stroke(cam)
+local cam=Instance.new("TextButton");cam.Position=UDim2.new(0,18,1,-58);cam.Size=UDim2.fromOffset(118,36);cam.BackgroundColor3=Color3.fromRGB(12,15,22);cam.TextColor3=Color3.new(1,1,1);cam.Font=Enum.Font.GothamBold;cam.TextSize=13;cam.Text="CAM : OFF";cam.Parent=gui;corner(cam);stroke(cam)
 local gfxLevel=2
-local gfx=Instance.new("TextButton");gfx.Position=UDim2.new(0,213,1,-58);gfx.Size=UDim2.fromOffset(170,40);gfx.BackgroundColor3=Color3.fromRGB(12,15,22);gfx.TextColor3=Color3.new(1,1,1);gfx.Font=Enum.Font.GothamBold;gfx.TextSize=13;gfx.Parent=gui;corner(gfx);stroke(gfx)
+local gfx=Instance.new("TextButton");gfx.Position=UDim2.new(0,146,1,-58);gfx.Size=UDim2.fromOffset(120,36);gfx.BackgroundColor3=Color3.fromRGB(12,15,22);gfx.TextColor3=Color3.new(1,1,1);gfx.Font=Enum.Font.GothamBold;gfx.TextSize=13;gfx.Parent=gui;corner(gfx);stroke(gfx)
 local function applyGraphics()
- local names={"FAIBLE","MOYEN","ÉLEVÉ"};gfx.Text="GRAPHISMES : "..names[gfxLevel]
+ local names={"FAIBLE","MOYEN","ÉLEVÉ"};gfx.Text="QUALITÉ : "..names[gfxLevel]
  local lighting=game:GetService("Lighting");local bloom=lighting:FindFirstChild("FestivalBloom");local rays=lighting:FindFirstChild("FestivalRays");local atmosphere=lighting:FindFirstChild("FestivalAtmosphere")
  if bloom then bloom.Enabled=gfxLevel>=2 end;if rays then rays.Enabled=gfxLevel>=3 end
  if atmosphere then atmosphere.Density=gfxLevel==1 and .04 or (gfxLevel==2 and .08 or .10) end
@@ -73,7 +73,7 @@ upgradesButton=navButton("CONSTRUIRE",Color3.fromRGB(255,95,130),function() end)
 local customizeButton=navButton("PERSONNALISER",Color3.fromRGB(120,100,245),function() end)
 
 local upgradeRemote=ReplicatedStorage:WaitForChild("FestivalUpgrade")
-local styleBar=Instance.new("Frame");styleBar.Size=UDim2.fromOffset(780,92);styleBar.Position=UDim2.new(.5,-390,0,190);styleBar.BackgroundTransparency=1;styleBar.Parent=gui
+local styleBar=Instance.new("Frame");styleBar.Size=UDim2.fromOffset(780,92);styleBar.Position=UDim2.new(.5,-390,0,190);styleBar.BackgroundTransparency=1;styleBar.Visible=false;styleBar.Parent=gui
 local styleLayout=Instance.new("UIListLayout");styleLayout.FillDirection=Enum.FillDirection.Horizontal;styleLayout.HorizontalAlignment=Enum.HorizontalAlignment.Center;styleLayout.Padding=UDim.new(0,8);styleLayout.Wraps=true;styleLayout.Parent=styleBar
 for _,info in ipairs({{"MAIN STAGE","Mainstage"},{"CAVE","Cave"},{"BOILER 360°","Boiler"},{"WAREHOUSE","Warehouse"},{"OPEN AIR","OpenAir"},{"HARD STAGE","Hard"},{"BEACH","Beach"}})do
  local b=Instance.new("TextButton");b.Size=UDim2.fromOffset(102,40);b.BackgroundColor3=Color3.fromRGB(22,27,38);b.TextColor3=Color3.new(1,1,1);b.Font=Enum.Font.GothamBold;b.TextSize=12;b.Text=info[1];b.Parent=styleBar;corner(b,10);stroke(b)
@@ -94,7 +94,11 @@ local function openCustomize()
   local x=8
   for _,o in ipairs(options)do local b=Instance.new("TextButton");b.Size=UDim2.fromOffset(math.max(70,#o*8+22),38);b.Position=UDim2.fromOffset(x,35);b.BackgroundColor3=Color3.fromRGB(38,44,58);b.TextColor3=Color3.new(1,1,1);b.Font=Enum.Font.GothamBold;b.TextSize=11;b.Text=o;b.Parent=r;corner(b,9);b.MouseButton1Click:Connect(function()if not p:GetAttribute("EventActive")then upgradeRemote:FireServer("CUSTOMIZE",kind,o)end end);x+=b.Size.X.Offset+7 end
  end
- row("NOM DU FESTIVAL",{"NOVA","PULSE","ECLIPSE","RAVE","IMPACT","HORIZON","VOID","UNITY"},"NAME")
+ local sr=Instance.new("Frame");sr.Size=UDim2.new(1,0,0,82);sr.BackgroundColor3=Color3.fromRGB(22,27,38);sr.Parent=body;corner(sr,12)
+ local sl=Instance.new("TextLabel");sl.Size=UDim2.new(1,-16,0,28);sl.Position=UDim2.fromOffset(10,3);sl.BackgroundTransparency=1;sl.Text="STYLE DE SCÈNE";sl.TextXAlignment=Enum.TextXAlignment.Left;sl.TextColor3=Color3.fromRGB(220,225,235);sl.Font=Enum.Font.GothamBold;sl.TextSize=12;sl.Parent=sr
+ local sx=8
+ for _,o in ipairs({{"MAIN","Mainstage"},{"CAVE","Cave"},{"BOILER","Boiler"},{"WAREHOUSE","Warehouse"},{"OPEN AIR","OpenAir"},{"HARD","Hard"},{"BEACH","Beach"}})do local b=Instance.new("TextButton");b.Size=UDim2.fromOffset(73,38);b.Position=UDim2.fromOffset(sx,35);b.BackgroundColor3=Color3.fromRGB(38,44,58);b.TextColor3=Color3.new(1,1,1);b.Font=Enum.Font.GothamBold;b.TextSize=9;b.Text=o[1];b.Parent=sr;corner(b,9);b.MouseButton1Click:Connect(function()if not p:GetAttribute("EventActive")then upgradeRemote:FireServer("STYLE",o[2])end end);sx+=79 end
+  row("NOM DU FESTIVAL",{"NOVA","PULSE","ECLIPSE","RAVE","IMPACT","HORIZON","VOID","UNITY"},"NAME")
  row("COULEURS",{"Purple","Red","Green","Blue","Pink","Mono"},"PALETTE")
  row("AMBIANCE / DÉCOR",{"Festive","Industrial","Clean"},"DECOR")
  local hint=Instance.new("TextLabel");hint.Size=UDim2.new(1,0,0,50);hint.BackgroundTransparency=1;hint.Text="Tout s'applique directement sur ton slot. Plus de choix seront débloqués avec la progression.";hint.TextWrapped=true;hint.TextColor3=Color3.fromRGB(165,175,195);hint.Font=Enum.Font.Gotham;hint.TextSize=12;hint.Parent=body
@@ -141,6 +145,8 @@ local function activityButton(label,key)
  b.MouseButton1Click:Connect(function()if activityCooldown or not p:GetAttribute("EventActive")then return end;activityCooldown=true;upgradeRemote:FireServer("ACTIVITY",key);b.Text="✓ BONUS !";task.delay(4,function()if b.Parent then b.Text=label end;activityCooldown=false end)end)
 end
 activityButton("🙌 CHAUFFER PUBLIC","CROWD");activityButton("✨ LANCER EFFETS","FX");activityButton("🥤 AIDER STANDS","SERVICE")
+local actionsToggle=Instance.new("TextButton");actionsToggle.Size=UDim2.fromOffset(155,42);actionsToggle.Position=UDim2.new(.5,-77,1,-188);actionsToggle.BackgroundColor3=Color3.fromRGB(22,27,38);actionsToggle.TextColor3=Color3.new(1,1,1);actionsToggle.Font=Enum.Font.GothamBold;actionsToggle.TextSize=12;actionsToggle.Text="ACTIONS FESTIVAL";actionsToggle.Visible=false;actionsToggle.Parent=gui;corner(actionsToggle,10);stroke(actionsToggle)
+actionsToggle.MouseButton1Click:Connect(function()activities.Visible=not activities.Visible;actionsToggle.Text=activities.Visible and "FERMER ACTIONS"or"ACTIONS FESTIVAL"end)
 local launch=Instance.new("TextButton");launch.Size=UDim2.fromOffset(300,64);launch.Position=UDim2.new(.5,-150,1,-132);launch.BackgroundColor3=Color3.fromRGB(92,64,220);launch.TextColor3=Color3.new(1,1,1);launch.Font=Enum.Font.GothamBlack;launch.TextSize=18;launch.Text="▶ OUVRIR MON FESTIVAL";launch.Parent=gui;corner(launch,14);stroke(launch)
 local eventBar=Instance.new("Frame");eventBar.Size=UDim2.fromOffset(360,70);eventBar.Position=UDim2.new(.5,-180,0,142);eventBar.BackgroundColor3=Color3.fromRGB(13,16,23);eventBar.Visible=false;eventBar.Parent=gui;corner(eventBar,14);stroke(eventBar)
 local eventText=Instance.new("TextLabel");eventText.Size=UDim2.new(1,-20,0,30);eventText.Position=UDim2.fromOffset(10,5);eventText.BackgroundTransparency=1;eventText.TextColor3=Color3.new(1,1,1);eventText.Font=Enum.Font.GothamBold;eventText.TextSize=14;eventText.Parent=eventBar
@@ -149,7 +155,7 @@ local hypeFill=Instance.new("Frame");hypeFill.Size=UDim2.fromScale(.2,1);hypeFil
 launch.MouseButton1Click:Connect(function()upgradeRemote:FireServer("START_EVENT")end)
 local function refreshEvent()
  local active=p:GetAttribute("EventActive")==true;local hype=p:GetAttribute("EventHype")or 0;local time=p:GetAttribute("EventTime")or 0
- eventBar.Visible=active;launch.Visible=not active;activities.Visible=active
+ eventBar.Visible=active;launch.Visible=not active;actionsToggle.Visible=active;if not active then activities.Visible=false;actionsToggle.Text="ACTIONS FESTIVAL"end
  eventText.Text="FESTIVAL OUVERT  •  "..time.."s  •  AMBIANCE "..hype.."%  •  "..tostring(p:GetAttribute("EventVisitors")or 0).." VISITEURS"
  hypeFill.Size=UDim2.fromScale(math.clamp(hype/100,0,1),1)
  if active then objective.Text="TON FESTIVAL EST OUVERT ! • Regarde les visiteurs arriver • DJ = bonus facultatif" end
@@ -253,7 +259,7 @@ danceRemote.OnClientEvent:Connect(function(action,a,b,c)
   closeDance();objective.Text=(c and "DANCE BATTLE GAGNÉ !  +"or"DANCE BATTLE TERMINÉ  +")..(c and "90"or"45").."$  •  "..tostring(a).." - "..tostring(b)
  end
 end)
-local enabled=false;cam.MouseButton1Click:Connect(function()enabled=not enabled;cam.Text="CAMÉRA MUSICALE : "..(enabled and "ON"or"OFF")end)
+local enabled=false;cam.MouseButton1Click:Connect(function()enabled=not enabled;cam.Text="CAM : "..(enabled and "ON"or"OFF")end)
 RunService:BindToRenderStep("MusicCam",Enum.RenderPriority.Camera.Value+1,function(dt)
  local world=workspace:FindFirstChild("FestivalWorld");local stage=world and world:FindFirstChild("Mainstage");local screen=stage and stage:FindFirstChild("Screen");local mainSound=screen and screen:FindFirstChild("Music");local root=p.Character and p.Character:FindFirstChild("HumanoidRootPart");local camera=workspace.CurrentCamera
  local sound=mainSound;local source=screen
