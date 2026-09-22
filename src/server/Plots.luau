@@ -32,12 +32,30 @@ local function person(parent,pos,index)
  for _,x in ipairs({-.43,.43})do local leg=part(m,"Leg",Vector3.new(.58,2,.65),pos+Vector3.new(x,1.05,0),Color3.fromRGB(25,27,32));leg.CanCollide=false end
  for _,x in ipairs({-1.05,1.05})do local arm=part(m,"Arm",Vector3.new(.48,2,.48),pos+Vector3.new(x,3.05,0),skin);arm.CanCollide=false end
 end
-local function setShowLights(plot,enabled)
+local showLoops={}
+local function setShowLights(plot,enabled,player)
  local build=plot:FindFirstChild("PlayerBuild");if not build then return end
+ local token=(showLoops[plot]or 0)+1;showLoops[plot]=token
+ local lights={};local lenses={}
  for _,v in build:GetDescendants()do
-  if v:IsA("SpotLight")or v:IsA("PointLight")or v:IsA("Beam")then v.Enabled=enabled end
-  if v:IsA("BasePart")and(v.Name=="LightLens"or v.Name=="FloorLens")then v.Material=enabled and Enum.Material.Neon or Enum.Material.SmoothPlastic;v.Transparency=enabled and 0 or .25 end
+  if v:IsA("SpotLight")or v:IsA("PointLight")or v:IsA("Beam")then table.insert(lights,v);v.Enabled=enabled end
+  if v:IsA("BasePart")and(v.Name=="LightLens"or v.Name=="FloorLens")then table.insert(lenses,v);v.Material=enabled and Enum.Material.Neon or Enum.Material.SmoothPlastic;v.Transparency=enabled and 0 or .25 end
  end
+ if not enabled then return end
+ local style=player and(player:GetAttribute("StageStyle")or"Mainstage")or"Mainstage"
+ local speed=style=="Hard"and .16 or(style=="Cave"and .32 or(style=="Boiler"and .24 or .27))
+ task.spawn(function()
+  local beat=0
+  while plot.Parent and player and player.Parent and player:GetAttribute("EventActive")and showLoops[plot]==token do
+   beat+=1
+   for i,v in ipairs(lights)do if v.Parent then
+    local on=(beat+i)%3~=0;v.Enabled=on
+    if v:IsA("SpotLight")or v:IsA("PointLight")then v.Brightness=on and(2+math.min(4,branchLevel(player,"Lights")*.12))or .15 end
+   end end
+   for i,v in ipairs(lenses)do if v.Parent then v.Transparency=((beat+i)%3~=0)and 0 or .5 end end
+   task.wait(speed)
+  end
+ end)
 end
 local function clearEventCrowd(plot)
  local old=plot:FindFirstChild("EventCrowd");if old then old:Destroy()end
@@ -60,6 +78,16 @@ local function spawnEventCrowd(plot,player)
      local offset=v.Position-start;TweenService:Create(v,TweenInfo.new(1.8+(i%4)*.22,Enum.EasingStyle.Linear),{Position=target+offset}):Play()
     end end
    end
+   task.wait(.28)
+  end
+  -- Once inside, visitors bounce in small groups so the slot feels like an active crowd.
+  local pulse=0
+  while folder.Parent and player.Parent and player:GetAttribute("EventActive")do
+   pulse+=1
+   for i,model in ipairs(folder:GetChildren())do if model:IsA("Model")then
+    local dy=((pulse+i)%2==0)and .16 or -.16
+    for _,v in ipairs(model:GetChildren())do if v:IsA("BasePart")then v.Position+=Vector3.new(0,dy,0)end end
+   end end
    task.wait(.28)
   end
  end)
@@ -321,7 +349,7 @@ function M.assign(player,world,Config)
      pp:SetAttribute("ActivityScore",(pp:GetAttribute("ActivityScore")or 0)+1)
     elseif action=="START_EVENT" then
      if pp:GetAttribute("EventActive") then return end
-     local tutorial=pp:GetAttribute("TutorialStep")or 1;if tutorial==1 then pp:SetAttribute("TutorialStep",2) elseif tutorial==4 then pp:SetAttribute("TutorialStep",5) end;local eventLength=45+math.min(45,math.floor((branchLevel(pp,"Stage")+branchLevel(pp,"Crowd"))/8)*5);pp:SetAttribute("EventActive",true);pp:SetAttribute("EventHype",45);pp:SetAttribute("EventTime",eventLength);pp:SetAttribute("EventVisitors",math.max(8,12+branchLevel(pp,"Crowd")*3+branchLevel(pp,"Marketing")*2));local pi=pp:GetAttribute("PlotIndex");local eventPlot=pi and getPlot(world,pi);if eventPlot then spawnEventCrowd(eventPlot,pp);setShowLights(eventPlot,true)end
+     local tutorial=pp:GetAttribute("TutorialStep")or 1;if tutorial==1 then pp:SetAttribute("TutorialStep",2) elseif tutorial==4 then pp:SetAttribute("TutorialStep",5) end;local eventLength=45+math.min(45,math.floor((branchLevel(pp,"Stage")+branchLevel(pp,"Crowd"))/8)*5);pp:SetAttribute("EventActive",true);pp:SetAttribute("EventHype",45);pp:SetAttribute("EventTime",eventLength);pp:SetAttribute("EventVisitors",math.max(8,12+branchLevel(pp,"Crowd")*3+branchLevel(pp,"Marketing")*2));local pi=pp:GetAttribute("PlotIndex");local eventPlot=pi and getPlot(world,pi);if eventPlot then spawnEventCrowd(eventPlot,pp);setShowLights(eventPlot,true,pp)end
      task.spawn(function()
       for remaining=(pp:GetAttribute("EventTime")or 45),1,-1 do
        if not pp.Parent then return end
@@ -333,7 +361,7 @@ function M.assign(player,world,Config)
       end
       local hype=pp:GetAttribute("EventHype")or 0;local crowdLv=branchLevel(pp,"Crowd");local standsLv=branchLevel(pp,"Stands")
       local stageLv=branchLevel(pp,"Stage");local soundLv=branchLevel(pp,"Sound");local marketingLv=branchLevel(pp,"Marketing");local staffLv=branchLevel(pp,"Staff");local baseEvent=190+stageLv*20+soundLv*15+crowdLv*17+standsLv*28+marketingLv*18+staffLv*12;local prestige=pp:GetAttribute("Prestige")or 0;local tokens=pp:GetAttribute("RebirthTokens")or 0;local permanent=1+prestige*.20+tokens*.04;local payout=math.floor(baseEvent*(.9+hype/500)*permanent);local gainedFans=math.floor(12+crowdLv*3+marketingLv*3+hype*.12)
-      pp:SetAttribute("Cash",(pp:GetAttribute("Cash")or 0)+payout);pp:SetAttribute("Fans",(pp:GetAttribute("Fans")or 0)+gainedFans);pp:SetAttribute("LastEventPayout",payout);pp:SetAttribute("LastEventFans",gainedFans);pp:SetAttribute("EventActive",false);pp:SetAttribute("EventTime",0);pp:SetAttribute("EventVisitors",0);if eventPlot then clearEventCrowd(eventPlot);setShowLights(eventPlot,false)end
+      pp:SetAttribute("Cash",(pp:GetAttribute("Cash")or 0)+payout);pp:SetAttribute("Fans",(pp:GetAttribute("Fans")or 0)+gainedFans);pp:SetAttribute("LastEventPayout",payout);pp:SetAttribute("LastEventFans",gainedFans);pp:SetAttribute("EventActive",false);pp:SetAttribute("EventTime",0);pp:SetAttribute("EventVisitors",0);if eventPlot then clearEventCrowd(eventPlot);setShowLights(eventPlot,false,pp)end
      end)
     elseif action=="BUY" and Config.Branches[key] then
      if pp:GetAttribute("EventActive") then return end
@@ -359,10 +387,17 @@ function M.assign(player,world,Config)
    end)
   end
   local mc=part(plot,"SlotMusicConsole",Vector3.new(10,4,5),plot.Floor.Position+Vector3.new(0,2,23),Color3.fromRGB(24,26,32),Enum.Material.Metal)
-  local ss=Instance.new("Sound");ss.Name="SlotMusic";ss.Volume=.55;ss.RollOffMode=Enum.RollOffMode.InverseTapered;ss.RollOffMinDistance=12;ss.RollOffMaxDistance=95;ss.Looped=true;ss.Parent=mc
-  local mp=Instance.new("ProximityPrompt");mp.ActionText="MUSIQUE SUIVANTE";mp.RequiresLineOfSight=false;mp.MaxActivationDistance=12;mp.Parent=mc;local mi=1
-  local function playMusic()local e=Config.Music[mi];if e then ss:Stop();ss.SoundId=e.soundId;ss:Play();mp.ObjectText="DJ • "..e.genre.." • "..e.name end end
-  mp.Triggered:Connect(function(pp)if pp==player then mi=mi%#Config.Music+1;playMusic()end end);playMusic()
+  local ss=Instance.new("Sound");ss.Name="SlotMusic";ss.Volume=.55;ss.RollOffMode=Enum.RollOffMode.InverseTapered;ss.RollOffMinDistance=12;ss.RollOffMaxDistance=95;ss.Looped=false;ss.Parent=mc
+  local mp=Instance.new("ProximityPrompt");mp.ActionText="STYLE SUIVANT";mp.RequiresLineOfSight=false;mp.MaxActivationDistance=12;mp.Parent=mc
+  local styleList={};local seen={};for _,e in ipairs(Config.Music)do local st=e.style or e.genre;if not seen[st]then seen[st]=true;table.insert(styleList,st)end end
+  local styleIndex=1;local songIndex=0
+  local function styleTracks()local out={};local st=styleList[styleIndex];for _,e in ipairs(Config.Music)do if(e.style or e.genre)==st then table.insert(out,e)end end;return out end
+  local function playNextSlot()
+   local tracks=styleTracks();if #tracks==0 then return end;songIndex=songIndex%#tracks+1;local e=tracks[songIndex]
+   ss:Stop();ss.SoundId=e.soundId;ss:SetAttribute("MusicStyle",e.style or e.genre);ss:Play();mp.ObjectText=(styleList[styleIndex]or"MUSIQUE").." • "..e.name
+  end
+  ss.Ended:Connect(function()task.delay(.35,playNextSlot)end)
+  mp.Triggered:Connect(function(pp)if pp==player and #styleList>0 then styleIndex=styleIndex%#styleList+1;songIndex=0;playNextSlot()end end);playNextSlot()
 
   break
  end end
