@@ -11,6 +11,16 @@ local function part(parent,name,size,pos,color,material)
 end
 local function branchLevel(p,key)return p:GetAttribute(key.."Level") or 0 end
 local function cost(Config,key,level)local b=Config.Branches[key];return math.floor(b.base*(b.growth^level))end
+local function person(parent,pos,index)
+ local m=Instance.new("Model");m.Name="FestivalGoer";m.Parent=parent
+ local shirts={Color3.fromRGB(32,34,40),Color3.fromRGB(80,110,210),Color3.fromRGB(170,65,105),Color3.fromRGB(45,145,105),Color3.fromRGB(205,145,55)}
+ local skins={Color3.fromRGB(241,205,170),Color3.fromRGB(190,135,95),Color3.fromRGB(112,76,58)}
+ local shirt=shirts[index%#shirts+1];local skin=skins[index%#skins+1]
+ local torso=part(m,"Torso",Vector3.new(1.7,2.3,.9),pos+Vector3.new(0,3,0),shirt,Enum.Material.SmoothPlastic);torso.CanCollide=false
+ local head=part(m,"Head",Vector3.new(1.35,1.35,1.35),pos+Vector3.new(0,4.9,0),skin,Enum.Material.SmoothPlastic);head.Shape=Enum.PartType.Ball;head.CanCollide=false
+ for _,x in ipairs({-.43,.43})do local leg=part(m,"Leg",Vector3.new(.58,2,.65),pos+Vector3.new(x,1.05,0),Color3.fromRGB(25,27,32));leg.CanCollide=false end
+ for _,x in ipairs({-1.05,1.05})do local arm=part(m,"Arm",Vector3.new(.48,2,.48),pos+Vector3.new(x,3.05,0),skin);arm.CanCollide=false end
+end
 local function buildStage(plot,player)
  local old=plot:FindFirstChild("PlayerBuild");if old then old:Destroy()end
  local f=Instance.new("Folder");f.Name="PlayerBuild";f.Parent=plot
@@ -57,12 +67,23 @@ local function buildStage(plot,player)
  if stage>=20 then for _,x in ipairs({-48,48})do part(f,"SideScreen",Vector3.new(15,20,2),pos+Vector3.new(x,18,-34),Color3.fromRGB(28,42,58),Enum.Material.SmoothPlastic)end end
  if stage>=25 then part(f,"FestivalCrown",Vector3.new(105,5,5),pos+Vector3.new(0,40,-31),s.accent,Enum.Material.SmoothPlastic)end
 
- -- Sound is its own visible progression: no speakers at the beginning.
- for i=1,math.min(sound,12)do
-  local side=i%2==0 and 1 or -1;local row=math.ceil(i/2);local x=side*(18+math.min(row,3)*7);local y=5+math.floor((row-1)/3)*10
-  part(f,"Speaker",Vector3.new(6,9,5),pos+Vector3.new(x,y,-17),Color3.fromRGB(11,12,15),Enum.Material.SmoothPlastic)
+ -- Sound grows from tiny pole speakers into a proper festival PA.
+ if sound>=1 then
+  for _,x in ipairs({-13,13})do
+   part(f,"SpeakerPole",Vector3.new(.7,6,.7),pos+Vector3.new(x,3,-17),Color3.fromRGB(65,67,72),Enum.Material.Metal)
+   local top=part(f,"SpeakerTop",Vector3.new(4.2,5,3.2),pos+Vector3.new(x,7,-17),Color3.fromRGB(15,16,19),Enum.Material.SmoothPlastic)
+   local cone=part(f,"SpeakerCone",Vector3.new(2.4,2.4,.25),pos+Vector3.new(x,7,-15.35),Color3.fromRGB(48,50,55),Enum.Material.Metal);cone.Shape=Enum.PartType.Cylinder;cone.Orientation=Vector3.new(90,0,0)
+  end
  end
- if sound>=10 then for _,x in ipairs({-36,36})do part(f,"SubStack",Vector3.new(12,8,8),pos+Vector3.new(x,4,-15),Color3.fromRGB(9,10,12),Enum.Material.SmoothPlastic)end end
+ if sound>=2 then for _,x in ipairs({-13,13})do part(f,"Sub",Vector3.new(6.5,4.5,5),pos+Vector3.new(x,2.25,-18),Color3.fromRGB(11,12,15),Enum.Material.SmoothPlastic)end end
+ if sound>=4 then for _,x in ipairs({-23,23})do
+  part(f,"PAStand",Vector3.new(1,12,1),pos+Vector3.new(x,6,-20),Color3.fromRGB(70,72,78),Enum.Material.Metal)
+  for y=7,13,3 do part(f,"PACabinet",Vector3.new(5.5,2.5,3.5),pos+Vector3.new(x,y,-19),Color3.fromRGB(12,13,16),Enum.Material.SmoothPlastic)end
+ end end
+ if sound>=8 then for _,x in ipairs({-31,31})do for y=11,23,3 do
+  local cab=part(f,"LineArray",Vector3.new(6,2.4,3.5),pos+Vector3.new(x,y,-24),Color3.fromRGB(9,10,13),Enum.Material.SmoothPlastic);cab.Orientation=Vector3.new(math.min((y-11)*1.3,12),0,0)
+ end end end
+ if sound>=12 then for _,x in ipairs({-25,-17,-9,9,17,25})do part(f,"SubArray",Vector3.new(7,5.5,6),pos+Vector3.new(x,2.75,-14),Color3.fromRGB(8,9,11),Enum.Material.SmoothPlastic)end end
 
  -- Lighting starts only after buying it; fixtures attach to the stage rather than floating around the field.
  if lights>0 then
@@ -78,11 +99,23 @@ local function buildStage(plot,player)
  end
 
  -- Grounds stay readable and functional, without glowing blocks.
+ if crowd>=1 then
+  local visible=math.min(24,4+crowd*2)
+  for i=1,visible do local col=((i-1)%8)-3.5;local row=math.floor((i-1)/8);person(f,pos+Vector3.new(col*7+((i%3)-1)*.8,.1,3+row*8),i)end
+ end
  if crowd>=1 then part(f,"DanceFloor",Vector3.new(100,.16,42),pos+Vector3.new(0,.61,13),Color3.fromRGB(45,47,52),Enum.Material.Slate).CanCollide=false end
  if crowd>=4 then for _,x in ipairs({-42,42})do for z=-2,28,15 do part(f,"Barrier",Vector3.new(1,2.5,11),pos+Vector3.new(x,1.25,z),Color3.fromRGB(105,108,113),Enum.Material.Metal)end end end
  if crowd>=8 then for _,x in ipairs({-31,31})do part(f,"EntryPost",Vector3.new(2,12,2),pos+Vector3.new(x,6,48),Color3.fromRGB(50,52,58),Enum.Material.Metal)end;part(f,"EntryArch",Vector3.new(64,2,2),pos+Vector3.new(0,12,48),Color3.fromRGB(50,52,58),Enum.Material.Metal);sign("ENTREE FESTIVAL",Vector3.new(0,10.5,47.2),Vector3.new(28,3,.5))end
  if stands>=1 then
-  for i=1,math.min(stands,6)do local side=i%2==0 and 1 or -1;local row=math.ceil(i/2);local vendor=part(f,"Vendor",Vector3.new(15,7,10),pos+Vector3.new(side*67,3.5,30-row*16),Color3.fromRGB(42,44,50),Enum.Material.Metal);local g=Instance.new("SurfaceGui");g.Face=Enum.NormalId.Front;g.Parent=vendor;local t=Instance.new("TextLabel");t.Size=UDim2.fromScale(1,1);t.BackgroundTransparency=1;local names={"BAR","FOOD","MERCH","VIP","TOKENS","INFO"};t.Text=names[i]or"STAND";t.TextColor3=Color3.new(1,1,1);t.Font=Enum.Font.GothamBold;t.TextScaled=true;t.Parent=g end
+  local names={"BAR","FOOD","MERCH","VIP","TOKENS","INFO"}
+  for i=1,math.min(stands,6)do
+   local side=i%2==0 and 1 or -1;local row=math.ceil(i/2);local base=pos+Vector3.new(side*67,0,30-row*16)
+   part(f,"KioskFloor",Vector3.new(17,.6,11),base+Vector3.new(0,.3,0),Color3.fromRGB(58,54,50),Enum.Material.WoodPlanks)
+   part(f,"KioskBack",Vector3.new(17,7,.7),base+Vector3.new(0,3.5,-5),Color3.fromRGB(38,40,46),Enum.Material.Metal)
+   part(f,"Counter",Vector3.new(17,3,2),base+Vector3.new(0,1.5,4),Color3.fromRGB(68,70,76),Enum.Material.Metal)
+   part(f,"Awning",Vector3.new(19,.7,12),base+Vector3.new(0,7,0),i%2==0 and s.accent or s.secondary,Enum.Material.Fabric)
+   sign(names[i]or"STAND",base-pos+Vector3.new(0,5.5,4.7),Vector3.new(11,2.3,.45))
+  end
  end
  if branchLevel(player,"Staff")>=5 then for _,x in ipairs({-70,70})do part(f,"StaffTent",Vector3.new(16,7,12),pos+Vector3.new(x,3.5,-5),Color3.fromRGB(38,40,45),Enum.Material.Fabric)end end
  if prestige>0 then local mon=part(f,"RebirthMonument",Vector3.new(4,8+math.min(prestige,10),4),pos+Vector3.new(0,4,42),s.accent,Enum.Material.SmoothPlastic);local light=Instance.new("PointLight");light.Brightness=.25;light.Range=10;light.Color=s.accent;light.Parent=mon end
@@ -107,7 +140,7 @@ function M.assign(player,world,Config)
      if (pp:GetAttribute("TutorialStep")or 1)==4 then pp:SetAttribute("TutorialStep",5) end
     elseif action=="START_EVENT" then
      if pp:GetAttribute("EventActive") then return end
-     pp:SetAttribute("EventActive",true);pp:SetAttribute("EventHype",35);pp:SetAttribute("EventTime",45);pp:SetAttribute("EventVisitors",math.max(8,12+branchLevel(pp,"Crowd")*4+branchLevel(pp,"Marketing")*3))
+     if (pp:GetAttribute("TutorialStep")or 1)==1 then pp:SetAttribute("TutorialStep",2) end;pp:SetAttribute("EventActive",true);pp:SetAttribute("EventHype",35);pp:SetAttribute("EventTime",45);pp:SetAttribute("EventVisitors",math.max(8,12+branchLevel(pp,"Crowd")*4+branchLevel(pp,"Marketing")*3))
      task.spawn(function()
       for remaining=45,1,-1 do
        if not pp.Parent then return end
@@ -118,7 +151,7 @@ function M.assign(player,world,Config)
        task.wait(1)
       end
       local hype=pp:GetAttribute("EventHype")or 0;local crowdLv=branchLevel(pp,"Crowd");local standsLv=branchLevel(pp,"Stands")
-      local payout=math.floor(180+(hype*5)+(crowdLv*22)+(standsLv*28));local gainedFans=math.floor(15+hype*.55+crowdLv*4)
+      local stageLv=branchLevel(pp,"Stage");local soundLv=branchLevel(pp,"Sound");local marketingLv=branchLevel(pp,"Marketing");local baseEvent=260+stageLv*32+soundLv*24+crowdLv*28+standsLv*36+marketingLv*30;local payout=math.floor(baseEvent*(.85+hype/300));local gainedFans=math.floor(20+crowdLv*5+marketingLv*4+hype*.22)
       pp:SetAttribute("Cash",(pp:GetAttribute("Cash")or 0)+payout);pp:SetAttribute("Fans",(pp:GetAttribute("Fans")or 0)+gainedFans);pp:SetAttribute("LastEventPayout",payout);pp:SetAttribute("EventActive",false);pp:SetAttribute("EventTime",0);pp:SetAttribute("EventVisitors",0)
      end)
     elseif action=="BUY" and Config.Branches[key] then
@@ -126,7 +159,7 @@ function M.assign(player,world,Config)
      local price=cost(Config,key,lv);local cash=pp:GetAttribute("Cash")or 0;if cash<price then return end
      pp:SetAttribute("Cash",cash-price);pp:SetAttribute(key.."Level",lv+1);pp:SetAttribute("Fans",(pp:GetAttribute("Fans")or 0)+10+(lv+1)*5)
      local ts=pp:GetAttribute("TutorialStep")or 1
-     if ts==1 and key=="Sound" then pp:SetAttribute("TutorialStep",2) elseif ts==2 and key=="Stage" then pp:SetAttribute("TutorialStep",3) elseif ts==3 and key=="Crowd" then pp:SetAttribute("TutorialStep",4) end
+     if ts==2 and key=="Stage" then pp:SetAttribute("TutorialStep",3) elseif ts==3 and key=="Crowd" then pp:SetAttribute("TutorialStep",4) end
      local pi=pp:GetAttribute("PlotIndex");local target=pi and getPlot(world,pi);if target then buildStage(target,pp) end
     elseif action=="STYLE" and styles[key] then pp:SetAttribute("StageStyle",key);local pi=pp:GetAttribute("PlotIndex");local target=pi and getPlot(world,pi);if target then buildStage(target,pp) end
     elseif action=="REBIRTH" then
