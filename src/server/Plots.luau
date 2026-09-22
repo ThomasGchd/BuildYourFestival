@@ -62,7 +62,7 @@ local function buildStage(plot,player)
   for _,x in ipairs({-72,72})do part(f,"StaffTent",Vector3.new(16,7,12),pos+Vector3.new(x,3.5,-3),Color3.fromRGB(35,38,45),Enum.Material.Fabric)end
  end
  for i=1,math.min(crowd,12)do local x=-48+((i-1)%6)*19;local z=8+math.floor((i-1)/6)*14;part(f,"Barrier",Vector3.new(14,2,.5),pos+Vector3.new(x,1,z),Color3.fromRGB(105,108,115),Enum.Material.Metal)end
- for i=1,math.min(stands,6)do local side=i%2==0 and 1 or -1;local row=math.ceil(i/2);local b=part(f,"Vendor",Vector3.new(14,7,10),pos+Vector3.new(side*68,3.5,30-row*16),i%2==0 and s.accent or s.secondary,Enum.Material.SmoothPlastic);local sg=Instance.new("SurfaceGui");sg.Face=Enum.NormalId.Front;sg.Parent=b;local tx=Instance.new("TextLabel");tx.Size=UDim2.fromScale(1,1);tx.BackgroundTransparency=1;tx.Text={"BAR","FOOD","MERCH","VIP","TOKENS","INFO"}[i];tx.TextScaled=true;tx.TextColor3=Color3.new(1,1,1);tx.Font=Enum.Font.GothamBold;tx.Parent=sg end
+ for i=1,math.min(stands,6)do local side=i%2==0 and 1 or -1;local row=math.ceil(i/2);local b=part(f,"Vendor",Vector3.new(14,7,10),pos+Vector3.new(side*68,3.5,30-row*16),i%2==0 and s.accent or s.secondary,Enum.Material.SmoothPlastic);local sg=Instance.new("SurfaceGui");sg.Face=Enum.NormalId.Front;sg.Parent=b;local tx=Instance.new("TextLabel");tx.Size=UDim2.fromScale(1,1);tx.BackgroundTransparency=1;local vendorNames={"BAR","FOOD","MERCH","VIP","TOKENS","INFO"};tx.Text=vendorNames[i] or "STAND";tx.TextScaled=true;tx.TextColor3=Color3.new(1,1,1);tx.Font=Enum.Font.GothamBold;tx.Parent=sg end
 end
 local function pad(plot,name,offset,color,callback)
  local p=part(plot,name,Vector3.new(11,.45,11),plot.Floor.Position+offset,color,Enum.Material.SmoothPlastic);local pr=Instance.new("ProximityPrompt");pr.RequiresLineOfSight=false;pr.MaxActivationDistance=10;pr.Parent=p;pr.Triggered:Connect(callback);return p,pr
@@ -79,7 +79,7 @@ function M.assign(player,world,Config)
   local order={"Stage","Sound","Lights","FX","Crowd","Stands","Marketing","Staff"}
   for n,key in ipairs(order)do
    local col=(n-1)%4;local row=math.floor((n-1)/4)
-   local pd,pr=pad(plot,"Upgrade"..key,Vector3.new(-55+col*36,.55,40-row*15),styles.Neon.accent,function(pp)
+   local _padPart,pr=pad(plot,"Upgrade"..key,Vector3.new(-55+col*36,.55,40-row*15),styles.Neon.accent,function(pp)
     if pp~=player then return end;local lv=branchLevel(pp,key);local b=Config.Branches[key];if lv>=b.max then return end
     local price=cost(Config,key,lv);local cash=pp:GetAttribute("Cash")or 0;if cash<price then return end
     pp:SetAttribute("Cash",cash-price);pp:SetAttribute(key.."Level",lv+1);pp:SetAttribute("Fans",(pp:GetAttribute("Fans")or 0)+10+(lv+1)*5);refreshPrompt(pr,Config,key,pp);buildStage(plot,pp)
