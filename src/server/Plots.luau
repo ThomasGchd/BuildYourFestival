@@ -87,14 +87,6 @@ local function buildStage(plot,player)
  if branchLevel(player,"Staff")>=5 then for _,x in ipairs({-70,70})do part(f,"StaffTent",Vector3.new(16,7,12),pos+Vector3.new(x,3.5,-5),Color3.fromRGB(38,40,45),Enum.Material.Fabric)end end
  if prestige>0 then local mon=part(f,"RebirthMonument",Vector3.new(4,8+math.min(prestige,10),4),pos+Vector3.new(0,4,42),s.accent,Enum.Material.SmoothPlastic);local light=Instance.new("PointLight");light.Brightness=.25;light.Range=10;light.Color=s.accent;light.Parent=mon end
 end
-local function pad(plot,name,offset,color,callback)
- local p=part(plot,name,Vector3.new(5,4,3),plot.Floor.Position+offset+Vector3.new(0,2,0),Color3.fromRGB(25,28,34),Enum.Material.Metal)
- local trim=part(plot,name.."Glow",Vector3.new(4.2,.18,2.2),plot.Floor.Position+offset+Vector3.new(0,4.1,0),color,Enum.Material.SmoothPlastic);trim.CanCollide=false
- local pr=Instance.new("ProximityPrompt");pr.RequiresLineOfSight=false;pr.MaxActivationDistance=10;pr.Parent=p;pr.Triggered:Connect(callback);return p,pr
-end
-local function refreshPrompt(pr,Config,key,player)
- local lv=branchLevel(player,key);local b=Config.Branches[key];pr.ActionText=lv>=b.max and "MAX" or ("AMELIORER • $"..cost(Config,key,lv));pr.ObjectText=b.label.." • NIV."..lv
-end
 function M.assign(player,world,Config)
  if player:GetAttribute("PlotIndex")then return end
  for i=1,Config.PlotCount do if not owners[i]then
@@ -136,6 +128,10 @@ function M.start(world,Config)
  task.spawn(function()while task.wait(2)do for _,p in Players:GetPlayers()do
   local prestige=p:GetAttribute("Prestige")or 0;local stage=branchLevel(p,"Stage");local sound=branchLevel(p,"Sound");local crowd=branchLevel(p,"Crowd");local stands=branchLevel(p,"Stands");local marketing=branchLevel(p,"Marketing");local staff=branchLevel(p,"Staff")
   local income=10+stage*8+sound*5+crowd*6+stands*14+marketing*10+staff*8;income=math.floor(income*(1+prestige*.25+(p:GetAttribute("RebirthTokens")or 0)*.05))
+  local total=0;for key in pairs(Config.Branches)do total+=branchLevel(p,key)end
+  local phase=Config.TycoonPhases[1].name;local nextNeed=nil
+  for _,info in ipairs(Config.TycoonPhases)do if total>=info.need then phase=info.name else nextNeed=info.need;break end end
+  p:SetAttribute("FestivalPhase",phase);p:SetAttribute("IncomePerTick",income);p:SetAttribute("NextPhaseNeed",nextNeed or -1)
   p:SetAttribute("Cash",(p:GetAttribute("Cash")or 0)+income);p:SetAttribute("Fans",(p:GetAttribute("Fans")or 0)+math.max(1,crowd+math.floor(marketing*.7)+prestige*3))
  end end end)
 end
