@@ -29,11 +29,13 @@ local function truss(parent,pos,height)
 end
 function M.build(Config)
  local old=workspace:FindFirstChild("FestivalWorld");if old then old:Destroy() end
- Lighting.ClockTime=19.3;Lighting.Brightness=2;Lighting.Ambient=Color3.fromRGB(80,84,110);Lighting.OutdoorAmbient=Color3.fromRGB(92,95,120)
+ Lighting.ClockTime=18.65;Lighting.Brightness=2.25;Lighting.Ambient=Color3.fromRGB(72,78,105);Lighting.OutdoorAmbient=Color3.fromRGB(105,110,140);Lighting.EnvironmentDiffuseScale=.45;Lighting.EnvironmentSpecularScale=.8
+ local sky=Lighting:FindFirstChild("FestivalSky") or Instance.new("Sky");sky.Name="FestivalSky";sky.CelestialBodiesShown=true;sky.StarCount=3000;sky.SunAngularSize=14;sky.MoonAngularSize=10;sky.Parent=Lighting
+ local clouds=workspace.Terrain:FindFirstChild("FestivalClouds") or Instance.new("Clouds");clouds.Name="FestivalClouds";clouds.Cover=.32;clouds.Density=.38;clouds.Color=Color3.fromRGB(225,215,235);clouds.Parent=workspace.Terrain
  local bloom=Lighting:FindFirstChild("FestivalBloom") or Instance.new("BloomEffect");bloom.Name="FestivalBloom";bloom.Intensity=.28;bloom.Size=18;bloom.Threshold=1.65;bloom.Parent=Lighting
  local cc=Lighting:FindFirstChild("FestivalColor") or Instance.new("ColorCorrectionEffect");cc.Name="FestivalColor";cc.Brightness=.015;cc.Contrast=.08;cc.Saturation=.08;cc.TintColor=Color3.fromRGB(235,240,255);cc.Parent=Lighting
  local rays=Lighting:FindFirstChild("FestivalRays") or Instance.new("SunRaysEffect");rays.Name="FestivalRays";rays.Intensity=.025;rays.Spread=.65;rays.Parent=Lighting
- local atmosphere=Lighting:FindFirstChild("FestivalAtmosphere") or Instance.new("Atmosphere");atmosphere.Name="FestivalAtmosphere";atmosphere.Density=.16;atmosphere.Haze=.65;atmosphere.Parent=Lighting
+ local atmosphere=Lighting:FindFirstChild("FestivalAtmosphere") or Instance.new("Atmosphere");atmosphere.Name="FestivalAtmosphere";atmosphere.Density=.22;atmosphere.Haze=1.05;atmosphere.Glare=.12;atmosphere.Color=Color3.fromRGB(190,205,255);atmosphere.Decay=Color3.fromRGB(255,150,115);atmosphere.Parent=Lighting
  local root=Instance.new("Folder");root.Name="FestivalWorld";root.Parent=workspace
  -- Remove the default Roblox baseplate/spawn so nothing shows through our floor.
  local baseplate=workspace:FindFirstChild("Baseplate");if baseplate then baseplate:Destroy() end
@@ -59,6 +61,13 @@ function M.build(Config)
  for _,x in ipairs({-43,43}) do truss(root,Vector3.new(x,0,250),32) end
  part(root,"EntranceTop",Vector3.new(88,3,3),CFrame.new(0,31,250),Color3.fromRGB(35,37,43),Enum.Material.Metal)
  textSign(root,Vector3.new(0,25,248.3),Vector3.new(65,10,1),"BUILD YOUR FESTIVAL")
+ -- layered 3D festival perimeter: hills, trees and skyline silhouettes
+ local scenery=Instance.new("Folder");scenery.Name="Scenery";scenery.Parent=root
+ for i=1,24 do
+  local side=i%2==0 and 1 or -1;local z=300-((i-1)%12)*65;local x=side*(330+((i*29)%80))
+  local hill=part(scenery,"Hill",Vector3.new(150,55+((i*17)%55),105),CFrame.new(x,-8,z)*CFrame.Angles(0,math.rad((i*31)%90),math.rad(side*5)),Color3.fromRGB(37,72,48),Enum.Material.Grass);hill.Shape=Enum.PartType.Ball
+ end
+ for z=-360,270,35 do for _,x in ipairs({-300,-275,275,300})do if ((z+x)%70)==0 then tree(scenery,Vector3.new(x,0,z))end end end
  -- avenue dressing
  for z=-310,210,52 do
   lamp(root,Vector3.new(-49,0,z));lamp(root,Vector3.new(49,0,z))
@@ -91,6 +100,10 @@ function M.build(Config)
   local gui=Instance.new("BillboardGui");gui.Name="OwnerGui";gui.Size=UDim2.fromOffset(210,52);gui.StudsOffset=Vector3.new(0,4,0);gui.MaxDistance=55;gui.Parent=sign
   local txt=Instance.new("TextLabel");txt.Name="Text";txt.Size=UDim2.fromScale(1,1);txt.BackgroundTransparency=.15;txt.BackgroundColor3=Color3.fromRGB(18,20,26);txt.TextColor3=Color3.new(1,1,1);txt.Font=Enum.Font.GothamBold;txt.TextScaled=true;txt.Text="SLOT LIBRE";txt.Parent=gui
  end end
+ -- architectural gateway into the Mainstage arena
+ for _,x in ipairs({-118,118})do truss(root,Vector3.new(x,0,-330),24)end
+ part(root,"ArenaGateway",Vector3.new(238,3,3),CFrame.new(0,23,-330),Color3.fromRGB(38,40,48),Enum.Material.Metal)
+ textSign(root,Vector3.new(0,18,-328.3),Vector3.new(72,8,1),"MAINSTAGE DISTRICT")
  -- huge mainstage
  local stage=Instance.new("Model");stage.Name="Mainstage";stage.Parent=root
  part(stage,"Deck",Vector3.new(230,8,60),CFrame.new(0,4,-505),Color3.fromRGB(18,19,24),Enum.Material.Metal)
