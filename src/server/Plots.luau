@@ -29,13 +29,11 @@ local function buildStage(plot,player)
  for _,x in ipairs({-2.7,2.7})do local jog=part(f,"JogWheel",Vector3.new(2,.3,2),pos+Vector3.new(x,4.95,-26.5),Color3.fromRGB(70,72,78),Enum.Material.Metal);jog.Shape=Enum.PartType.Cylinder;jog.Orientation=Vector3.new(0,0,90)end
  part(f,"FlightCase",Vector3.new(5,3,4),pos+Vector3.new(10,1.5,-27),Color3.fromRGB(45,47,52),Enum.Material.DiamondPlate)
  sign("DJ",Vector3.new(0,7,-29),Vector3.new(10,2.5,.5))
- local deckPrompt=Instance.new("ProximityPrompt");deckPrompt.ActionText="MIXER";deckPrompt.ObjectText="PLATINES DJ";deckPrompt.RequiresLineOfSight=false;deckPrompt.MaxActivationDistance=10;deckPrompt.Parent=deck
+ local deckPrompt=Instance.new("ProximityPrompt");deckPrompt.ActionText="PRENDRE LES PLATINES";deckPrompt.ObjectText="PLATINES DJ";deckPrompt.RequiresLineOfSight=false;deckPrompt.MaxActivationDistance=10;deckPrompt.Parent=deck
  deckPrompt.Triggered:Connect(function(pp)
   if pp~=player then return end
-  local combo=(pp:GetAttribute("DJCombo")or 0)+1;pp:SetAttribute("DJCombo",combo)
-  if pp:GetAttribute("EventActive") then pp:SetAttribute("EventHype",math.min(100,(pp:GetAttribute("EventHype")or 0)+12+combo*2)) else pp:SetAttribute("Fans",(pp:GetAttribute("Fans")or 0)+2) end
-  if (pp:GetAttribute("TutorialStep")or 1)==4 then pp:SetAttribute("TutorialStep",5) end;deckPrompt.ObjectText="PLATINES DJ • COMBO x"..combo
-  task.delay(4,function()if pp.Parent then pp:SetAttribute("DJCombo",0);if deckPrompt.Parent then deckPrompt.ObjectText="PLATINES DJ"end end end)
+  if not pp:GetAttribute("EventActive") then return end
+  local remote=game:GetService("ReplicatedStorage"):FindFirstChild("FestivalUpgrade");if remote then remote:FireClient(pp,"DJ_OPEN")end
  end)
 
  -- Stage branch constructs a real venue around the original booth.
@@ -101,7 +99,13 @@ function M.assign(player,world,Config)
   if not upgradeRemote:GetAttribute("ServerBound") then
    upgradeRemote:SetAttribute("ServerBound",true)
    upgradeRemote.OnServerEvent:Connect(function(pp,action,key)
-    if action=="START_EVENT" then
+    if action=="DJ_HIT" then
+     if not pp:GetAttribute("EventActive") then return end
+     local rating=tonumber(key)or 0;rating=math.clamp(rating,0,3)
+     pp:SetAttribute("EventHype",math.min(100,(pp:GetAttribute("EventHype")or 0)+({0,3,7,12})[rating+1]))
+     if rating>=2 then pp:SetAttribute("DJCombo",(pp:GetAttribute("DJCombo")or 0)+1) else pp:SetAttribute("DJCombo",0) end
+     if (pp:GetAttribute("TutorialStep")or 1)==4 then pp:SetAttribute("TutorialStep",5) end
+    elseif action=="START_EVENT" then
      if pp:GetAttribute("EventActive") then return end
      pp:SetAttribute("EventActive",true);pp:SetAttribute("EventHype",20);pp:SetAttribute("EventTime",45)
      task.spawn(function()
