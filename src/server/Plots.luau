@@ -147,7 +147,21 @@ function M.assign(player,world,Config)
  for i=1,Config.PlotCount do if not owners[i]then
   owners[i]=player;player:SetAttribute("PlotIndex",i);player:SetAttribute("Cash",Config.StartCash);player:SetAttribute("Fans",0);player:SetAttribute("StageStyle","Neon");player:SetAttribute("Prestige",0);player:SetAttribute("RebirthTokens",0);player:SetAttribute("DJCombo",0);player:SetAttribute("TutorialStep",1);player:SetAttribute("EventActive",false);player:SetAttribute("EventHype",0);player:SetAttribute("EventTime",0);player:SetAttribute("LastEventPayout",0)
   for key in pairs(Config.Branches)do player:SetAttribute(key.."Level",0)end
-  local plot=getPlot(world,i);plot.OwnerSign.OwnerGui.Text.Text=player.DisplayName.." • FESTIVAL";buildStage(plot,player)
+  local plot=getPlot(world,i);do
+   local ownerSign=plot:FindFirstChild("OwnerSign")
+   local ownerGui=ownerSign and ownerSign:FindFirstChild("OwnerGui")
+   if ownerGui then
+    local oldText=ownerGui:FindFirstChild("Text");if oldText then oldText.Visible=false end
+    local card=ownerGui:FindFirstChild("PlayerCard") or Instance.new("Frame");card.Name="PlayerCard";card.Size=UDim2.fromScale(1,1);card.BackgroundColor3=Color3.fromRGB(16,18,24);card.BackgroundTransparency=.06;card.BorderSizePixel=0;card.Parent=ownerGui
+    local avatar=card:FindFirstChild("Avatar") or Instance.new("ImageLabel");avatar.Name="Avatar";avatar.Size=UDim2.fromOffset(48,48);avatar.Position=UDim2.fromOffset(3,2);avatar.BackgroundTransparency=1;avatar.Parent=card
+    local name=card:FindFirstChild("Name") or Instance.new("TextLabel");name.Name="Name";name.Position=UDim2.fromOffset(57,2);name.Size=UDim2.new(1,-60,1,-4);name.BackgroundTransparency=1;name.TextColor3=Color3.new(1,1,1);name.Font=Enum.Font.GothamBold;name.TextScaled=true;name.TextXAlignment=Enum.TextXAlignment.Left;name.Parent=card
+    name.Text=player.DisplayName
+    task.spawn(function()
+     local ok,img=pcall(function()return Players:GetUserThumbnailAsync(player.UserId,Enum.ThumbnailType.HeadShot,Enum.ThumbnailSize.Size180x180)end)
+     if ok and avatar.Parent then avatar.Image=img end
+    end)
+   end
+  end.." • FESTIVAL";buildStage(plot,player)
   -- Upgrades are UI-driven: keep the physical festival clean and readable.
   local upgradeRemote=game:GetService("ReplicatedStorage"):FindFirstChild("FestivalUpgrade")
   if not upgradeRemote then upgradeRemote=Instance.new("RemoteEvent");upgradeRemote.Name="FestivalUpgrade";upgradeRemote.Parent=game:GetService("ReplicatedStorage") end
@@ -201,7 +215,12 @@ function M.assign(player,world,Config)
  end end
 end
 function M.start(world,Config)
- Players.PlayerRemoving:Connect(function(p)local i=p:GetAttribute("PlotIndex");if i then owners[i]=nil;local plot=getPlot(world,i);if plot then plot.OwnerSign.OwnerGui.Text.Text="SLOT LIBRE";for _,x in plot:GetChildren()do if x.Name~="Floor" and x.Name~="Trim" and x.Name~="OwnerSign" then x:Destroy()end end end end end)
+ Players.PlayerRemoving:Connect(function(p)local i=p:GetAttribute("PlotIndex");if i then owners[i]=nil;local plot=getPlot(world,i);if plot then do
+    local gui=plot.OwnerSign:FindFirstChild("OwnerGui");if gui then
+     local card=gui:FindFirstChild("PlayerCard");if card then card:Destroy()end
+     local txt=gui:FindFirstChild("Text");if txt then txt.Visible=true;txt.Text="SLOT LIBRE"end
+    end
+   end;for _,x in plot:GetChildren()do if x.Name~="Floor" and x.Name~="Trim" and x.Name~="OwnerSign" then x:Destroy()end end end end end)
  task.spawn(function()while task.wait(2)do for _,p in Players:GetPlayers()do
   local prestige=p:GetAttribute("Prestige")or 0;local stage=branchLevel(p,"Stage");local sound=branchLevel(p,"Sound");local crowd=branchLevel(p,"Crowd");local stands=branchLevel(p,"Stands");local marketing=branchLevel(p,"Marketing");local staff=branchLevel(p,"Staff")
   local income=10+stage*8+sound*5+crowd*6+stands*14+marketing*10+staff*8;income=math.floor(income*(1+prestige*.25+(p:GetAttribute("RebirthTokens")or 0)*.05))
