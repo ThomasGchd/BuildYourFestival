@@ -30,13 +30,13 @@ end
 function M.build(Config)
  local old=workspace:FindFirstChild("FestivalWorld");if old then old:Destroy() end
  Lighting.ClockTime=19.3;Lighting.Brightness=2;Lighting.Ambient=Color3.fromRGB(80,84,110);Lighting.OutdoorAmbient=Color3.fromRGB(92,95,120)
- local bloom=Lighting:FindFirstChild("FestivalBloom") or Instance.new("BloomEffect");bloom.Name="FestivalBloom";bloom.Intensity=.7;bloom.Size=30;bloom.Threshold=1.2;bloom.Parent=Lighting
- local atmosphere=Lighting:FindFirstChild("FestivalAtmosphere") or Instance.new("Atmosphere");atmosphere.Name="FestivalAtmosphere";atmosphere.Density=.22;atmosphere.Haze=1.2;atmosphere.Parent=Lighting
+ local bloom=Lighting:FindFirstChild("FestivalBloom") or Instance.new("BloomEffect");bloom.Name="FestivalBloom";bloom.Intensity=.28;bloom.Size=18;bloom.Threshold=1.65;bloom.Parent=Lighting
+ local atmosphere=Lighting:FindFirstChild("FestivalAtmosphere") or Instance.new("Atmosphere");atmosphere.Name="FestivalAtmosphere";atmosphere.Density=.16;atmosphere.Haze=.65;atmosphere.Parent=Lighting
  local root=Instance.new("Folder");root.Name="FestivalWorld";root.Parent=workspace
  -- Remove the default Roblox baseplate/spawn so nothing shows through our floor.
  local baseplate=workspace:FindFirstChild("Baseplate");if baseplate then baseplate:Destroy() end
  for _,v in workspace:GetChildren() do if v:IsA("SpawnLocation") and v.Parent~=root then v:Destroy() end end
- part(root,"Ground",Vector3.new(650,2,900),CFrame.new(0,-1.5,-100),Color3.fromRGB(42,86,48),Enum.Material.SmoothPlastic)
+ part(root,"Ground",Vector3.new(900,2,900),CFrame.new(0,-1.5,-100),Color3.fromRGB(42,86,48),Enum.Material.SmoothPlastic)
  part(root,"Festival Avenue",Vector3.new(82,1,650),CFrame.new(0,0,-70),Color3.fromRGB(57,58,65),Enum.Material.SmoothPlastic)
  part(root,"Mainstage Plaza",Vector3.new(330,1,170),CFrame.new(0,0,-430),Color3.fromRGB(49,50,57),Enum.Material.SmoothPlastic)
  -- Fast travel: two moving walkways along the avenue.
@@ -66,6 +66,13 @@ function M.build(Config)
  booth(root,Vector3.new(78,.5,205),"BAR",Color3.fromRGB(82,164,255))
  booth(root,Vector3.new(-78,.5,-280),"MERCH",Color3.fromRGB(178,91,255))
  booth(root,Vector3.new(78,.5,-280),"INFO",Color3.fromRGB(65,214,158))
+ -- Mainstage village: useful shops around the arena without blocking the crowd.
+ booth(root,Vector3.new(-150,.5,-345),"DRINKS",Color3.fromRGB(55,160,255))
+ booth(root,Vector3.new(-150,.5,-375),"FOOD",Color3.fromRGB(245,112,64))
+ booth(root,Vector3.new(-150,.5,-405),"MERCH",Color3.fromRGB(180,90,255))
+ booth(root,Vector3.new(150,.5,-345),"VIP",Color3.fromRGB(245,195,70))
+ booth(root,Vector3.new(150,.5,-375),"TOKENS",Color3.fromRGB(70,220,165))
+ booth(root,Vector3.new(150,.5,-405),"LOCKERS",Color3.fromRGB(110,130,255))
  -- barriers / central decoration
  for z=-320,180,40 do
   for _,x in ipairs({-39,39}) do part(root,"Barrier",Vector3.new(1,3,16),CFrame.new(x,1.5,z),Color3.fromRGB(118,120,125),Enum.Material.Metal) end
@@ -73,12 +80,12 @@ function M.build(Config)
  local plots=Instance.new("Folder");plots.Name="Plots";plots.Parent=root
  for row=0,3 do for _,side in ipairs({-1,1}) do
   local i=row*2+(side==1 and 2 or 1);local model=Instance.new("Model");model.Name="Plot"..i;model:SetAttribute("Index",i);model.Parent=plots
-  local z=135-row*115;local x=side*155
-  local floor=part(model,"Floor",Vector3.new(135,1,96),CFrame.new(x,0,z),Color3.fromRGB(53,96,57),Enum.Material.SmoothPlastic);model.PrimaryPart=floor
+  local z=135-row*125;local x=side*205
+  local floor=part(model,"Floor",Vector3.new(175,1,112),CFrame.new(x,0,z),Color3.fromRGB(53,96,57),Enum.Material.SmoothPlastic);model.PrimaryPart=floor
   -- subtle plot trim instead of colored blocks
-  for _,dz in ipairs({-47,47}) do part(model,"Trim",Vector3.new(136,.35,1),CFrame.new(x,.56,z+dz),Color3.fromRGB(90,92,98),Enum.Material.Metal) end
-  for _,dx in ipairs({-67,67}) do part(model,"Trim",Vector3.new(1,.35,95),CFrame.new(x+dx,.56,z),Color3.fromRGB(90,92,98),Enum.Material.Metal) end
-  local sign=part(model,"OwnerSign",Vector3.new(27,7,1),CFrame.new(x-side*53,4,z+41),Color3.fromRGB(20,22,28),Enum.Material.Metal)
+  for _,dz in ipairs({-55,55}) do part(model,"Trim",Vector3.new(176,.35,1),CFrame.new(x,.56,z+dz),Color3.fromRGB(90,92,98),Enum.Material.Metal) end
+  for _,dx in ipairs({-87,87}) do part(model,"Trim",Vector3.new(1,.35,111),CFrame.new(x+dx,.56,z),Color3.fromRGB(90,92,98),Enum.Material.Metal) end
+  local sign=part(model,"OwnerSign",Vector3.new(27,7,1),CFrame.new(x-side*72,4,z+48),Color3.fromRGB(20,22,28),Enum.Material.Metal)
   local gui=Instance.new("BillboardGui");gui.Name="OwnerGui";gui.Size=UDim2.fromOffset(210,52);gui.StudsOffset=Vector3.new(0,4,0);gui.MaxDistance=55;gui.Parent=sign
   local txt=Instance.new("TextLabel");txt.Name="Text";txt.Size=UDim2.fromScale(1,1);txt.BackgroundTransparency=.15;txt.BackgroundColor3=Color3.fromRGB(18,20,26);txt.TextColor3=Color3.new(1,1,1);txt.Font=Enum.Font.GothamBold;txt.TextScaled=true;txt.Text="SLOT LIBRE";txt.Parent=gui
  end end
@@ -91,7 +98,7 @@ function M.build(Config)
  local screen=part(stage,"Screen",Vector3.new(105,42,1),CFrame.new(0,43,-529.5),Color3.fromRGB(88,53,210),Enum.Material.Neon)
  for _,x in ipairs({-83,83}) do part(stage,"SideScreen",Vector3.new(42,32,1),CFrame.new(x,41,-529),Color3.fromRGB(38,170,255),Enum.Material.Neon) end
  textSign(stage,Vector3.new(0,68,-529),Vector3.new(100,10,1),"MAINSTAGE")
- local sound=Instance.new("Sound");sound.Name="Music";sound.Volume=.65;sound.RollOffMaxDistance=440;sound.RollOffMinDistance=45;sound.Parent=screen
+ local sound=Instance.new("Sound");sound.Name="Music";sound.Volume=.72;sound.RollOffMode=Enum.RollOffMode.InverseTapered;sound.RollOffMaxDistance=900;sound.RollOffMinDistance=55;sound.Parent=screen
  local console=part(stage,"MusicConsole",Vector3.new(13,5,6),CFrame.new(0,3,-455),Color3.fromRGB(32,35,43),Enum.Material.Metal)
  local prompt=Instance.new("ProximityPrompt");prompt.ActionText="CHOISIR LA MUSIQUE";prompt.ObjectText="MAINSTAGE • ROBUX";prompt.MaxActivationDistance=12;prompt.RequiresLineOfSight=false;prompt.Parent=console
  -- FOH
