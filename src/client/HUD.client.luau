@@ -52,10 +52,27 @@ navButton("BOUTIQUES",Color3.fromRGB(255,175,65),function()teleport(Vector3.new(
 navButton("RENAISSANCE",Color3.fromRGB(80,225,155),function()
  local world=workspace:FindFirstChild("FestivalWorld");local plots=world and world:FindFirstChild("Plots");local i=p:GetAttribute("PlotIndex");local plot=i and plots and plots:FindFirstChild("Plot"..i);local pad=plot and plot:FindFirstChild("PrestigePad");if pad then teleport(pad.Position)end
 end)
-navButton("AMELIORATIONS",Color3.fromRGB(255,95,130),function()
- local world=workspace:FindFirstChild("FestivalWorld");local plots=world and world:FindFirstChild("Plots");local i=p:GetAttribute("PlotIndex");local plot=i and plots and plots:FindFirstChild("Plot"..i);if plot and plot:FindFirstChild("Floor")then teleport(plot.Floor.Position+Vector3.new(0,0,40))end
-end)
+local upgradesButton
+upgradesButton=navButton("AMELIORATIONS",Color3.fromRGB(255,95,130),function() end)
 
+local upgradeRemote=ReplicatedStorage:WaitForChild("FestivalUpgrade")
+local upgradePanel
+local branchNames={Stage="SCENE",Sound="SON",Lights="ECLAIRAGE",FX="EFFETS",Crowd="PUBLIC",Stands="STANDS",Marketing="MARKETING",Staff="EQUIPE"}
+local branchOrder={"Stage","Sound","Lights","FX","Crowd","Stands","Marketing","Staff"}
+local function openUpgrades()
+ if upgradePanel then upgradePanel:Destroy();upgradePanel=nil;return end
+ upgradePanel=Instance.new("Frame");upgradePanel.Size=UDim2.fromOffset(520,520);upgradePanel.Position=UDim2.new(.5,-260,.5,-260);upgradePanel.BackgroundColor3=Color3.fromRGB(13,16,23);upgradePanel.BorderSizePixel=0;upgradePanel.Parent=gui;corner(upgradePanel,16);stroke(upgradePanel)
+ local head=Instance.new("TextLabel");head.Size=UDim2.new(1,-70,0,58);head.Position=UDim2.fromOffset(22,0);head.BackgroundTransparency=1;head.Text="AMELIORER MON FESTIVAL";head.TextXAlignment=Enum.TextXAlignment.Left;head.TextColor3=Color3.new(1,1,1);head.Font=Enum.Font.GothamBold;head.TextSize=20;head.Parent=upgradePanel
+ local close=Instance.new("TextButton");close.Size=UDim2.fromOffset(42,42);close.Position=UDim2.new(1,-52,0,8);close.Text="X";close.BackgroundColor3=Color3.fromRGB(30,34,45);close.TextColor3=Color3.new(1,1,1);close.Font=Enum.Font.GothamBold;close.Parent=upgradePanel;corner(close,10);close.MouseButton1Click:Connect(function()upgradePanel:Destroy();upgradePanel=nil end)
+ local grid=Instance.new("Frame");grid.BackgroundTransparency=1;grid.Position=UDim2.fromOffset(18,64);grid.Size=UDim2.new(1,-36,1,-82);grid.Parent=upgradePanel
+ local layout=Instance.new("UIGridLayout");layout.CellSize=UDim2.new(.5,-7,0,92);layout.CellPadding=UDim2.fromOffset(12,12);layout.Parent=grid
+ for _,key in ipairs(branchOrder)do
+  local b=Instance.new("TextButton");b.BackgroundColor3=Color3.fromRGB(24,28,38);b.TextColor3=Color3.new(1,1,1);b.Font=Enum.Font.GothamBold;b.TextSize=14;b.TextWrapped=true;b.Parent=grid;corner(b,12);stroke(b)
+  local function redraw()local lv=p:GetAttribute(key.."Level")or 0;b.Text=branchNames[key].."\nNIVEAU "..lv.."\nCLIQUER POUR AMELIORER"end
+  redraw();p:GetAttributeChangedSignal(key.."Level"):Connect(redraw);b.MouseButton1Click:Connect(function()upgradeRemote:FireServer("BUY",key)end)
+ end
+end
+upgradesButton.MouseButton1Click:Connect(openUpgrades)
 local music=ReplicatedStorage:WaitForChild("FestivalMusic");local panel
 local function open(items,productId)
  if panel then panel:Destroy()end
