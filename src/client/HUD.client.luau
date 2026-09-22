@@ -72,10 +72,10 @@ local upgradesButton
 upgradesButton=navButton("CONSTRUIRE",Color3.fromRGB(255,95,130),function() end)
 
 local upgradeRemote=ReplicatedStorage:WaitForChild("FestivalUpgrade")
-local styleBar=Instance.new("Frame");styleBar.Size=UDim2.fromOffset(430,46);styleBar.Position=UDim2.new(.5,-215,0,190);styleBar.BackgroundTransparency=1;styleBar.Parent=gui
-local styleLayout=Instance.new("UIListLayout");styleLayout.FillDirection=Enum.FillDirection.Horizontal;styleLayout.HorizontalAlignment=Enum.HorizontalAlignment.Center;styleLayout.Padding=UDim.new(0,8);styleLayout.Parent=styleBar
-for _,info in ipairs({{"MAIN STAGE","Mainstage"},{"CAVE","Cave"},{"BOILER 360°","Boiler"}})do
- local b=Instance.new("TextButton");b.Size=UDim2.fromOffset(136,40);b.BackgroundColor3=Color3.fromRGB(22,27,38);b.TextColor3=Color3.new(1,1,1);b.Font=Enum.Font.GothamBold;b.TextSize=12;b.Text=info[1];b.Parent=styleBar;corner(b,10);stroke(b)
+local styleBar=Instance.new("Frame");styleBar.Size=UDim2.fromOffset(780,92);styleBar.Position=UDim2.new(.5,-390,0,190);styleBar.BackgroundTransparency=1;styleBar.Parent=gui
+local styleLayout=Instance.new("UIListLayout");styleLayout.FillDirection=Enum.FillDirection.Horizontal;styleLayout.HorizontalAlignment=Enum.HorizontalAlignment.Center;styleLayout.Padding=UDim.new(0,8);styleLayout.Wraps=true;styleLayout.Parent=styleBar
+for _,info in ipairs({{"MAIN STAGE","Mainstage"},{"CAVE","Cave"},{"BOILER 360°","Boiler"},{"WAREHOUSE","Warehouse"},{"OPEN AIR","OpenAir"},{"HARD STAGE","Hard"},{"BEACH","Beach"}})do
+ local b=Instance.new("TextButton");b.Size=UDim2.fromOffset(102,40);b.BackgroundColor3=Color3.fromRGB(22,27,38);b.TextColor3=Color3.new(1,1,1);b.Font=Enum.Font.GothamBold;b.TextSize=12;b.Text=info[1];b.Parent=styleBar;corner(b,10);stroke(b)
  b.MouseButton1Click:Connect(function()if not p:GetAttribute("EventActive")then ReplicatedStorage:WaitForChild("FestivalUpgrade"):FireServer("STYLE",info[2])end end)
 end
 
