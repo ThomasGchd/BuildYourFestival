@@ -37,6 +37,26 @@ local function ambientPerson(parent,pos,index)
  for _,x in ipairs({-.43,.43})do local q=part(m,"Leg",Vector3.new(.58,2,.65),CFrame.new(pos+Vector3.new(x,1.05,0)),Color3.fromRGB(25,27,32));q.CanCollide=false end
  for _,x in ipairs({-1.05,1.05})do local q=part(m,"Arm",Vector3.new(.48,2,.48),CFrame.new(pos+Vector3.new(x,3.05,0)),skin);q.CanCollide=false end
 end
+local function festoon(parent,a,b,count)
+ for i=0,count do
+  local t=i/count;local pos=a:Lerp(b,t)+Vector3.new(0,-math.sin(t*math.pi)*2,0)
+  local bulb=part(parent,"FestoonBulb",Vector3.new(.45,.45,.45),CFrame.new(pos),Color3.fromRGB(255,190+(i%3)*20,115),Enum.Material.Neon);bulb.Shape=Enum.PartType.Ball;bulb.CanCollide=false
+  if i%3==0 then local l=Instance.new("PointLight");l.Range=9;l.Brightness=.35;l.Color=bulb.Color;l.Parent=bulb end
+ end
+end
+local function picnic(parent,pos)
+ local top=part(parent,"PicnicTable",Vector3.new(8,.45,3),CFrame.new(pos+Vector3.new(0,2.5,0)),Color3.fromRGB(112,76,48),Enum.Material.WoodPlanks)
+ for _,z in ipairs({-2.5,2.5})do part(parent,"Bench",Vector3.new(8,.35,1.2),CFrame.new(pos+Vector3.new(0,1.5,z)),Color3.fromRGB(98,67,44),Enum.Material.WoodPlanks)end
+ for _,x in ipairs({-2.8,2.8})do part(parent,"TableLeg",Vector3.new(.45,2.5,.45),CFrame.new(pos+Vector3.new(x,1.2,0)),Color3.fromRGB(45,47,52),Enum.Material.Metal)end
+end
+local function bin(parent,pos)
+ local b=part(parent,"FestivalBin",Vector3.new(3,4,3),CFrame.new(pos+Vector3.new(0,2,0)),Color3.fromRGB(42,48,52),Enum.Material.Metal)
+ part(parent,"BinBand",Vector3.new(3.15,.55,3.15),CFrame.new(pos+Vector3.new(0,3,0)),Color3.fromRGB(90,205,145),Enum.Material.SmoothPlastic)
+end
+local function flag(parent,pos,color)
+ part(parent,"FlagPole",Vector3.new(.35,13,.35),CFrame.new(pos+Vector3.new(0,6.5,0)),Color3.fromRGB(75,77,82),Enum.Material.Metal)
+ local f=part(parent,"FestivalFlag",Vector3.new(4.5,2.8,.18),CFrame.new(pos+Vector3.new(2.1,11,0)),color,Enum.Material.Fabric);f.CanCollide=false
+end
 function M.build(Config)
  local old=workspace:FindFirstChild("FestivalWorld");if old then old:Destroy() end
  Lighting.ClockTime=19.55;Lighting.Brightness=3.1;Lighting.ExposureCompensation=.65;Lighting.Ambient=Color3.fromRGB(105,115,145);Lighting.OutdoorAmbient=Color3.fromRGB(125,135,165);Lighting.EnvironmentDiffuseScale=.7;Lighting.EnvironmentSpecularScale=.8
@@ -47,6 +67,15 @@ function M.build(Config)
  local rays=Lighting:FindFirstChild("FestivalRays") or Instance.new("SunRaysEffect");rays.Name="FestivalRays";rays.Intensity=.025;rays.Spread=.65;rays.Parent=Lighting
  local atmosphere=Lighting:FindFirstChild("FestivalAtmosphere") or Instance.new("Atmosphere");atmosphere.Name="FestivalAtmosphere";atmosphere.Density=.10;atmosphere.Haze=.22;atmosphere.Glare=.04;atmosphere.Color=Color3.fromRGB(175,195,235);atmosphere.Decay=Color3.fromRGB(70,85,125);atmosphere.Parent=Lighting
  local root=Instance.new("Folder");root.Name="FestivalWorld";root.Parent=workspace
+ local decor=Instance.new("Folder");decor.Name="FestivalDecor";decor.Parent=root
+ -- One visual language across the site: warm bulbs, purple/cyan banners, dark metal and wood.
+ for z=-285,225,85 do
+  flag(decor,Vector3.new(-47,0,z),Color3.fromRGB(116,88,235));flag(decor,Vector3.new(47,0,z),Color3.fromRGB(55,205,225))
+ end
+ for z=-250,190,110 do festoon(decor,Vector3.new(-43,17,z),Vector3.new(43,17,z),14)end
+ for _,p0 in ipairs({Vector3.new(-108,0,205),Vector3.new(108,0,205),Vector3.new(-112,0,-300),Vector3.new(112,0,-300)})do picnic(decor,p0)end
+ for _,p0 in ipairs({Vector3.new(-48,0,180),Vector3.new(48,0,110),Vector3.new(-48,0,20),Vector3.new(48,0,-80),Vector3.new(-48,0,-180),Vector3.new(48,0,-260)})do bin(decor,p0)end
+ 
  -- Remove the default Roblox baseplate/spawn so nothing shows through our floor.
  -- Keep any Studio baseplate untouched; FestivalWorld fully covers its playable area.
  for _,v in workspace:GetChildren() do if v:IsA("SpawnLocation") and v.Parent~=root then v:Destroy() end end
