@@ -15,6 +15,15 @@ Config.Branches = {
  Staff={label="EQUIPE",base=95,growth=1.49,max=35},
 }
 Config.PrestigeBaseCost = 250000
+Config.TycoonPhases = {
+ {name="DEPART",need=0},
+ {name="PETITE SOIREE",need=5},
+ {name="PETITE SCENE",need=15},
+ {name="SCENE LOCALE",need=35},
+ {name="FESTIVAL",need=70},
+ {name="GROS FESTIVAL",need=120},
+ {name="MEGA FESTIVAL",need=190},
+}
 
 -- Creator Store music. Keep this list curated: arbitrary user audio IDs are never accepted.
 Config.Music = {
