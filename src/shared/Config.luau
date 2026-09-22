@@ -1,9 +1,20 @@
 local Config = {}
 Config.StartCash = 300
 Config.PlotCount = 8
-Config.MaxStageLevel = 8
+Config.MaxStageLevel = 25
 Config.MainstageProductId = 0 -- Replace with the real Developer Product ID before publishing
 Config.StageUpgradeCosts = {50,120,250,500,900,1500,2500,4000}
+Config.Branches = {
+ Stage={label="SCENE",base=90,growth=1.48,max=25},
+ Sound={label="SON",base=70,growth=1.46,max=30},
+ Lights={label="LIGHTS",base=80,growth=1.47,max=30},
+ FX={label="FX",base=120,growth=1.52,max=25},
+ Crowd={label="PUBLIC",base=65,growth=1.44,max=40},
+ Stands={label="STANDS",base=100,growth=1.50,max=30},
+ Marketing={label="MARKETING",base=110,growth=1.53,max=35},
+ Staff={label="EQUIPE",base=95,growth=1.49,max=35},
+}
+Config.PrestigeBaseCost = 250000
 
 -- Creator Store music. Keep this list curated: arbitrary user audio IDs are never accepted.
 Config.Music = {
