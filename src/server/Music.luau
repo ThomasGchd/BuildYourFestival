@@ -6,6 +6,7 @@ function M.start(world,Config)
  local previous=ReplicatedStorage:FindFirstChild("FestivalMusic");if previous then previous:Destroy() end
  local remote=Instance.new("RemoteEvent");remote.Name="FestivalMusic";remote.Parent=ReplicatedStorage
  local queue={};local pending={};local default=1;local playToken=0;local current=nil;local activeStyle=nil;local stylePos=0
+ local nextTrack
  local function play(entry)
   if not entry then return end
   playToken+=1;local token=playToken;current=entry
@@ -21,14 +22,14 @@ function M.start(world,Config)
     remote:FireAllClients("NOW",entry.name,entry.by or "Festival",#queue)
    else
     warn("[BuildYourFestival] Audio failed to load: "..entry.soundId)
-    remote:FireAllClients("NOW","Audio indisponible","Festival",#queue)
+    remote:FireAllClients("NOW","Piste ignorée","Festival",#queue);task.delay(.2,nextTrack)
    end
   end)
  end
  local function tracksForStyle(style)
   local out={};for _,e in ipairs(Config.Music)do if e.style==style then table.insert(out,e)end end;return out
  end
- local function nextTrack()
+ nextTrack=function()
   if #queue>0 then play(table.remove(queue,1))
   elseif activeStyle then local tracks=tracksForStyle(activeStyle);if #tracks>0 then stylePos=stylePos%#tracks+1;play(tracks[stylePos])else activeStyle=nil;nextTrack()end
   elseif #Config.Music>0 then local e=Config.Music[default];default=default%#Config.Music+1;play(e) end
