@@ -219,25 +219,51 @@ local function refresh()stats.Text="$"..tostring(p:GetAttribute("Cash")or 0).." 
 for _,a in ipairs({"Cash","Fans","Prestige","RebirthTokens","StageLevel","SoundLevel","LightsLevel","FXLevel","CrowdLevel","StandsLevel","MarketingLevel","StaffLevel"})do p:GetAttributeChangedSignal(a):Connect(refresh)end;refresh()
 -- Social dances: one compact button opens a small dance selector.
 local freeDance=Instance.new("TextButton");freeDance.Name="FreeDanceButton";freeDance.Size=UDim2.fromOffset(122,42);freeDance.Position=UDim2.new(1,-140,1,-62);freeDance.BackgroundColor3=Color3.fromRGB(22,27,38);freeDance.TextColor3=Color3.new(1,1,1);freeDance.Font=Enum.Font.GothamBold;freeDance.TextSize=13;freeDance.Text="DANSER";freeDance.Parent=gui;corner(freeDance,11);stroke(freeDance)
-local danceMenu=nil;local dancing=false;local danceConn=nil;local danceBase=nil;local danceStyle="RAVE"
-local danceStyles={"RAVE","JUMPSTYLE","HARDSTYLE","GABBER","SHUFFLE","BOUNCE"}
+local danceMenu=nil;local dancing=false;local danceConn=nil;local danceStyle="RAVE"
+local danceStyles={"RAVE","JUMPSTYLE","HARDSTYLE","GABBER","SHUFFLE","TEKK"}
+local danceJoints={}
+local function resetDancePose()
+ for _,j in pairs(danceJoints)do if j and j.Parent then j.Transform=CFrame.identity end end
+ table.clear(danceJoints)
+end
 local function stopFreeDance()
- dancing=false;freeDance.Text="DANSER";if danceConn then danceConn:Disconnect();danceConn=nil end
- local char=p.Character;local root=char and char:FindFirstChild("HumanoidRootPart");if root and danceBase then root.CFrame=CFrame.new(root.Position)*CFrame.Angles(0,danceBase,0,0)end
+ dancing=false;freeDance.Text="DANSER";if danceConn then danceConn:Disconnect();danceConn=nil end;resetDancePose()
 end
 local function startFreeDance(style)
- stopFreeDance();danceStyle=style;local char=p.Character;local hum=char and char:FindFirstChildOfClass("Humanoid");local root=char and char:FindFirstChild("HumanoidRootPart");if not hum or not root then return end
- dancing=true;freeDance.Text=style.."  X";local _,yaw,_=root.CFrame:ToOrientation();danceBase=yaw;local t=0
+ stopFreeDance();danceStyle=style
+ local char=p.Character;local hum=char and char:FindFirstChildOfClass("Humanoid");local root=char and char:FindFirstChild("HumanoidRootPart");if not hum or not root then return end
+ local torso=char:FindFirstChild("UpperTorso")or char:FindFirstChild("Torso")
+ local lower=char:FindFirstChild("LowerTorso")or torso
+ danceJoints={
+  waist=lower and lower:FindFirstChild("Waist"),
+  neck=torso and torso:FindFirstChild("Neck"),
+  rs=torso and (torso:FindFirstChild("RightShoulder")or torso:FindFirstChild("Right Shoulder")),
+  ls=torso and (torso:FindFirstChild("LeftShoulder")or torso:FindFirstChild("Left Shoulder")),
+  rh=lower and (lower:FindFirstChild("RightHip")or lower:FindFirstChild("Right Hip")),
+  lh=lower and (lower:FindFirstChild("LeftHip")or lower:FindFirstChild("Left Hip"))
+ }
+ dancing=true;freeDance.Text=style.."  X";local t=0
  danceConn=RunService.RenderStepped:Connect(function(dt)
   if not dancing or not root.Parent then stopFreeDance();return end;if hum.MoveDirection.Magnitude>.08 then stopFreeDance();return end
-  t+=dt;local y=0;local turn=0;local roll=0;local pitch=0
-  if style=="RAVE"then y=math.abs(math.sin(t*6))*.16;turn=math.sin(t*3)*.18;roll=math.sin(t*6)*.05
-  elseif style=="JUMPSTYLE"then y=math.abs(math.sin(t*9))*.28;turn=math.sin(t*4.5)*.12;pitch=math.sin(t*9)*.07
-  elseif style=="HARDSTYLE"then y=math.abs(math.sin(t*7.2))*.22;turn=math.sin(t*7.2)*.16;roll=math.sin(t*3.6)*.07
-  elseif style=="GABBER"then y=math.abs(math.sin(t*11))*.18;turn=math.sin(t*5.5)*.22;pitch=math.sin(t*11)*.06
-  elseif style=="SHUFFLE"then y=math.abs(math.sin(t*8))*.12;turn=math.sin(t*4)*.34;roll=math.sin(t*8)*.08
-  else y=math.abs(math.sin(t*5))*.3;turn=math.sin(t*2.5)*.28 end
-  root.CFrame=CFrame.new(root.Position+Vector3.new(0,y,0))*CFrame.Angles(pitch,danceBase+turn,roll)
+  t+=dt
+  local s,c=math.sin,math.cos
+  local w,n,rs,ls,rh,lh=CFrame.identity,CFrame.identity,CFrame.identity,CFrame.identity,CFrame.identity,CFrame.identity
+  if style=="RAVE"then
+   w=CFrame.Angles(0,s(t*3)*.12,s(t*6)*.09);rs=CFrame.Angles(-.75+s(t*6)*.28,0,.35);ls=CFrame.Angles(-.75-s(t*6)*.28,0,-.35);rh=CFrame.Angles(s(t*6)*.18,0,0);lh=CFrame.Angles(-s(t*6)*.18,0,0)
+  elseif style=="JUMPSTYLE"then
+   w=CFrame.Angles(-.08,0,s(t*4)*.05);rs=CFrame.Angles(.25+s(t*8)*.18,0,.12);ls=CFrame.Angles(.25-s(t*8)*.18,0,-.12);rh=CFrame.Angles(s(t*8)*.72,0,0);lh=CFrame.Angles(-s(t*8)*.72,0,0)
+  elseif style=="HARDSTYLE"then
+   w=CFrame.Angles(s(t*7)*.08,s(t*3.5)*.12,0);rs=CFrame.Angles(-1.0+s(t*7)*.35,0,.25);ls=CFrame.Angles(-.25-s(t*7)*.45,0,-.25);rh=CFrame.Angles(s(t*7)*.42,0,0);lh=CFrame.Angles(-s(t*7)*.42,0,0)
+  elseif style=="GABBER"then
+   w=CFrame.Angles(.12+s(t*10)*.06,0,s(t*5)*.08);rs=CFrame.Angles(-.35+s(t*10)*.45,0,.4);ls=CFrame.Angles(-.35-s(t*10)*.45,0,-.4);rh=CFrame.Angles(s(t*10)*.62,0,.08);lh=CFrame.Angles(-s(t*10)*.62,0,-.08)
+  elseif style=="SHUFFLE"then
+   w=CFrame.Angles(0,s(t*4)*.28,s(t*8)*.05);rs=CFrame.Angles(-.45,0,.5+s(t*4)*.2);ls=CFrame.Angles(-.45,0,-.5-s(t*4)*.2);rh=CFrame.Angles(s(t*8)*.38,s(t*4)*.18,0);lh=CFrame.Angles(-s(t*8)*.38,-s(t*4)*.18,0)
+  else -- TEKK: fast stomping + asymmetric pumping, inspired by bunker/rave floor energy.
+   w=CFrame.Angles(.18+s(t*9)*.05,s(t*4.5)*.16,s(t*9)*.06);n=CFrame.Angles(-.08+s(t*4.5)*.06,0,0);rs=CFrame.Angles(-1.15+s(t*9)*.48,0,.38);ls=CFrame.Angles(-.55-s(t*9)*.32,0,-.55);rh=CFrame.Angles(s(t*9)*.72,0,.1);lh=CFrame.Angles(-s(t*9)*.72,0,-.1)
+  end
+  if danceJoints.waist then danceJoints.waist.Transform=w end;if danceJoints.neck then danceJoints.neck.Transform=n end
+  if danceJoints.rs then danceJoints.rs.Transform=rs end;if danceJoints.ls then danceJoints.ls.Transform=ls end
+  if danceJoints.rh then danceJoints.rh.Transform=rh end;if danceJoints.lh then danceJoints.lh.Transform=lh end
  end)
 end
 local function toggleDanceMenu()
