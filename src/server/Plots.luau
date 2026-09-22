@@ -121,10 +121,6 @@ local function buildStage(plot,player)
   local visible=math.min(36,4+crowd*3)
   for i=1,visible do local col=((i-1)%8)-3.5;local row=math.floor((i-1)/8);person(f,pos+Vector3.new(col*7+((i%3)-1)*.8,.1,3+row*8),i)end
  end
- if crowd>=1 then
-  local visible=math.min(24,4+crowd*2)
-  for i=1,visible do local col=((i-1)%8)-3.5;local row=math.floor((i-1)/8);person(f,pos+Vector3.new(col*7+((i%3)-1)*.8,.1,3+row*8),i)end
- end
  if crowd>=1 then part(f,"DanceFloor",Vector3.new(100,.16,42),pos+Vector3.new(0,.61,13),Color3.fromRGB(45,47,52),Enum.Material.Slate).CanCollide=false end
  if crowd>=4 then for _,x in ipairs({-42,42})do for z=-2,28,15 do part(f,"Barrier",Vector3.new(1,2.5,11),pos+Vector3.new(x,1.25,z),Color3.fromRGB(105,108,113),Enum.Material.Metal)end end end
  if crowd>=8 then for _,x in ipairs({-31,31})do part(f,"EntryPost",Vector3.new(2,12,2),pos+Vector3.new(x,6,48),Color3.fromRGB(50,52,58),Enum.Material.Metal)end;part(f,"EntryArch",Vector3.new(64,2,2),pos+Vector3.new(0,12,48),Color3.fromRGB(50,52,58),Enum.Material.Metal);sign("ENTREE FESTIVAL",Vector3.new(0,10.5,47.2),Vector3.new(28,3,.5))end
@@ -145,7 +141,7 @@ end
 function M.assign(player,world,Config)
  if player:GetAttribute("PlotIndex")then return end
  for i=1,Config.PlotCount do if not owners[i]then
-  owners[i]=player;player:SetAttribute("PlotIndex",i);player:SetAttribute("Cash",Config.StartCash);player:SetAttribute("Fans",0);player:SetAttribute("StageStyle","Neon");player:SetAttribute("Prestige",0);player:SetAttribute("RebirthTokens",0);player:SetAttribute("DJCombo",0);player:SetAttribute("TutorialStep",1);player:SetAttribute("EventActive",false);player:SetAttribute("EventHype",0);player:SetAttribute("EventTime",0);player:SetAttribute("LastEventPayout",0)
+  owners[i]=player;player:SetAttribute("PlotIndex",i);player:SetAttribute("Cash",Config.StartCash);player:SetAttribute("Fans",0);player:SetAttribute("StageStyle","Neon");player:SetAttribute("Prestige",0);player:SetAttribute("RebirthTokens",0);player:SetAttribute("DJCombo",0);player:SetAttribute("TutorialStep",1);player:SetAttribute("EventActive",false);player:SetAttribute("EventHype",0);player:SetAttribute("EventTime",0);player:SetAttribute("LastEventPayout",0);player:SetAttribute("LastEventFans",0)
   for key in pairs(Config.Branches)do player:SetAttribute(key.."Level",0)end
   local plot=getPlot(world,i);do
    local ownerSign=plot:FindFirstChild("OwnerSign")
@@ -161,7 +157,7 @@ function M.assign(player,world,Config)
      if ok and avatar.Parent then avatar.Image=img end
     end)
    end
-  end.." • FESTIVAL";buildStage(plot,player)
+  end;buildStage(plot,player)
   -- Upgrades are UI-driven: keep the physical festival clean and readable.
   local upgradeRemote=game:GetService("ReplicatedStorage"):FindFirstChild("FestivalUpgrade")
   if not upgradeRemote then upgradeRemote=Instance.new("RemoteEvent");upgradeRemote.Name="FestivalUpgrade";upgradeRemote.Parent=game:GetService("ReplicatedStorage") end
@@ -176,7 +172,7 @@ function M.assign(player,world,Config)
      if (pp:GetAttribute("TutorialStep")or 1)==4 then pp:SetAttribute("TutorialStep",5) end
     elseif action=="START_EVENT" then
      if pp:GetAttribute("EventActive") then return end
-     if (pp:GetAttribute("TutorialStep")or 1)==1 then pp:SetAttribute("TutorialStep",2) end;if (pp:GetAttribute("TutorialStep")or 1)==1 then pp:SetAttribute("TutorialStep",2) end;pp:SetAttribute("EventActive",true);pp:SetAttribute("EventHype",35);pp:SetAttribute("EventTime",45);pp:SetAttribute("EventVisitors",math.max(8,12+branchLevel(pp,"Crowd")*4+branchLevel(pp,"Marketing")*3))
+     if (pp:GetAttribute("TutorialStep")or 1)==1 then pp:SetAttribute("TutorialStep",2) end;pp:SetAttribute("EventActive",true);pp:SetAttribute("EventHype",35);pp:SetAttribute("EventTime",45);pp:SetAttribute("EventVisitors",math.max(8,12+branchLevel(pp,"Crowd")*4+branchLevel(pp,"Marketing")*3))
      task.spawn(function()
       for remaining=45,1,-1 do
        if not pp.Parent then return end
@@ -188,7 +184,7 @@ function M.assign(player,world,Config)
       end
       local hype=pp:GetAttribute("EventHype")or 0;local crowdLv=branchLevel(pp,"Crowd");local standsLv=branchLevel(pp,"Stands")
       local stageLv=branchLevel(pp,"Stage");local soundLv=branchLevel(pp,"Sound");local marketingLv=branchLevel(pp,"Marketing");local baseEvent=260+stageLv*32+soundLv*24+crowdLv*28+standsLv*36+marketingLv*30;local payout=math.floor(baseEvent*(.85+hype/300));local gainedFans=math.floor(20+crowdLv*5+marketingLv*4+hype*.22)
-      pp:SetAttribute("Cash",(pp:GetAttribute("Cash")or 0)+payout);pp:SetAttribute("Fans",(pp:GetAttribute("Fans")or 0)+gainedFans);pp:SetAttribute("LastEventPayout",payout);pp:SetAttribute("EventActive",false);pp:SetAttribute("EventTime",0);pp:SetAttribute("EventVisitors",0)
+      pp:SetAttribute("Cash",(pp:GetAttribute("Cash")or 0)+payout);pp:SetAttribute("Fans",(pp:GetAttribute("Fans")or 0)+gainedFans);pp:SetAttribute("LastEventPayout",payout);pp:SetAttribute("LastEventFans",gainedFans);pp:SetAttribute("EventActive",false);pp:SetAttribute("EventTime",0);pp:SetAttribute("EventVisitors",0)
      end)
     elseif action=="BUY" and Config.Branches[key] then
      local lv=branchLevel(pp,key);local branch=Config.Branches[key];if lv>=branch.max then return end
