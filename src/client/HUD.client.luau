@@ -11,10 +11,10 @@ local function label(pos,size,text)
  local x=Instance.new("TextLabel");x.Position=pos;x.Size=size;x.BackgroundColor3=Color3.fromRGB(12,15,22);x.BackgroundTransparency=.08;x.TextColor3=Color3.new(1,1,1);x.Font=Enum.Font.GothamBold;x.TextSize=14;x.Text=text;x.BorderSizePixel=0;x.Parent=gui;corner(x);stroke(x);return x
 end
 local function totalProgress()local t=0;for _,k in ipairs({"Stage","Sound","Lights","FX","Crowd","Stands","Marketing","Staff"})do t+=p:GetAttribute(k.."Level")or 0 end;return t end
-local stats=label(UDim2.new(1,-540,0,18),UDim2.fromOffset(520,44),"")
+local stats=label(UDim2.new(1,-500,0,18),UDim2.fromOffset(480,40),"")
 local now=label(UDim2.new(.5,-220,1,-58),UDim2.fromOffset(440,40),"MAINSTAGE • chargement...")
 local objective=label(UDim2.new(.5,-230,0,18),UDim2.fromOffset(460,62),"")
-objective.TextWrapped=true;objective.TextSize=14
+objective.TextWrapped=true;objective.TextSize=14;objective.BackgroundTransparency=.18
 local function refreshObjective()
  local step=p:GetAttribute("TutorialStep")or 1
  local messages={
@@ -28,7 +28,7 @@ local function refreshObjective()
  objective.Visible=step<=5
 end
 p:GetAttributeChangedSignal("TutorialStep"):Connect(refreshObjective);refreshObjective()
-local phase=label(UDim2.new(.5,-190,0,88),UDim2.fromOffset(380,42),"")
+local phase=label(UDim2.new(.5,-190,0,88),UDim2.fromOffset(380,36),"")
 phase.TextSize=13
 local function refreshPhase()
  local name=p:GetAttribute("FestivalPhase")or"DEPART";local income=p:GetAttribute("IncomePerTick")or 0;local need=p:GetAttribute("NextPhaseNeed")or-1;local total=totalProgress()
@@ -101,11 +101,11 @@ launch.MouseButton1Click:Connect(function()upgradeRemote:FireServer("START_EVENT
 local function refreshEvent()
  local active=p:GetAttribute("EventActive")==true;local hype=p:GetAttribute("EventHype")or 0;local time=p:GetAttribute("EventTime")or 0
  eventBar.Visible=active;launch.Visible=not active
- eventText.Text="FESTIVAL EN COURS  •  "..time.."s  •  HYPE "..hype.."%"
+ eventText.Text="FESTIVAL OUVERT  •  "..time.."s  •  HYPE "..hype.."%  •  "..tostring(p:GetAttribute("EventVisitors")or 0).." VISITEURS"
  hypeFill.Size=UDim2.fromScale(math.clamp(hype/100,0,1),1)
- if active then objective.Text="FAIS LE SHOW • Utilise les platines pour maintenir la HYPE !" end
+ if active then objective.Text="FESTIVAL OUVERT • Fais évoluer ton terrain !  DJ facultatif = bonus de HYPE" end
 end
-for _,a in ipairs({"EventActive","EventHype","EventTime"})do p:GetAttributeChangedSignal(a):Connect(refreshEvent)end;refreshEvent()
+for _,a in ipairs({"EventActive","EventHype","EventTime","EventVisitors"})do p:GetAttributeChangedSignal(a):Connect(refreshEvent)end;refreshEvent()
 rebirthButton.MouseButton1Click:Connect(function()
  local prestige=p:GetAttribute("Prestige")or 0;local price=250000*((prestige+1)^2)
  if (p:GetAttribute("Cash")or 0)>=price then upgradeRemote:FireServer("REBIRTH") else objective.Text="RENAISSANCE • Il faut $"..price end
