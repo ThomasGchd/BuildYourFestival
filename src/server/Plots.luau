@@ -276,7 +276,41 @@ function M.assign(player,world,Config)
   break
  end end
 end
+local danceSlots={nil,nil};local danceActive=false
+local function setupDanceBattle(world)
+ local ReplicatedStorage=game:GetService("ReplicatedStorage")
+ local remote=ReplicatedStorage:FindFirstChild("DanceBattleRemote")or Instance.new("RemoteEvent");remote.Name="DanceBattleRemote";remote.Parent=ReplicatedStorage
+ local arena=world.root:FindFirstChild("DanceBattleArena");if not arena then return end
+ local function refresh()
+  for i=1,2 do local q=arena:FindFirstChild("Queue"..i);local pr=q and q:FindFirstChild("DanceQueuePrompt");if pr then pr.ObjectText=danceSlots[i]and(danceSlots[i].DisplayName.." • PRÊT")or("DANCE BATTLE • JOUEUR "..i)end end
+ end
+ local function begin()
+  if danceActive or not danceSlots[1]or not danceSlots[2]then return end;danceActive=true
+  local a,b=danceSlots[1],danceSlots[2];if not a.Parent or not b.Parent then danceActive=false;return end
+  local scores={[a]=0,[b]=0};local lastHit={[a]=0,[b]=0};local started=os.clock()
+  remote:FireClient(a,"START",b.DisplayName);remote:FireClient(b,"START",a.DisplayName)
+  local conn;conn=remote.OnServerEvent:Connect(function(pl,action,rating)
+   if action~="HIT"or scores[pl]==nil or os.clock()-started>25 then return end
+   if os.clock()-lastHit[pl]<.18 then return end;lastHit[pl]=os.clock()
+   local r=math.clamp(tonumber(rating)or 0,0,3);scores[pl]+=({0,10,25,50})[r+1]
+  end)
+  task.delay(25,function()
+   if conn then conn:Disconnect()end
+   local sa,sb=scores[a]or 0,scores[b]or 0
+   if a.Parent then a:SetAttribute("Cash",(a:GetAttribute("Cash")or 0)+(sa>=sb and 90 or 45));a:SetAttribute("Fans",(a:GetAttribute("Fans")or 0)+(sa>=sb and 12 or 6));remote:FireClient(a,"END",sa,sb,sa>=sb)end
+   if b.Parent then b:SetAttribute("Cash",(b:GetAttribute("Cash")or 0)+(sb>sa and 90 or 45));b:SetAttribute("Fans",(b:GetAttribute("Fans")or 0)+(sb>sa and 12 or 6));remote:FireClient(b,"END",sb,sa,sb>sa)end
+   danceSlots={nil,nil};danceActive=false;refresh()
+  end)
+ end
+ for i=1,2 do local q=arena:FindFirstChild("Queue"..i);local pr=q and q:FindFirstChild("DanceQueuePrompt");if pr then pr.Triggered:Connect(function(pl)
+   if danceActive then return end
+   for n=1,2 do if danceSlots[n]==pl then danceSlots[n]=nil;refresh();return end end
+   if danceSlots[i]and danceSlots[i]~=pl then return end;danceSlots[i]=pl;refresh();begin()
+  end)end end
+ refresh()
+end
 function M.start(world,Config)
+ setupDanceBattle(world)
  Players.PlayerRemoving:Connect(function(p)local i=p:GetAttribute("PlotIndex");if i then owners[i]=nil;local plot=getPlot(world,i);if plot then do
     local gui=plot.OwnerSign:FindFirstChild("OwnerGui");if gui then
      local card=gui:FindFirstChild("PlayerCard");if card then card:Destroy()end
