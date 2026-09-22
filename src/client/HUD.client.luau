@@ -217,26 +217,37 @@ end
 music.OnClientEvent:Connect(function(action,a,b,c)if action=="OPEN"then open(a,b)elseif action=="NOW"then now.Text="MAINSTAGE  •  "..a.."  •  "..b.."  •  file "..c end end)
 local function refresh()stats.Text="$"..tostring(p:GetAttribute("Cash")or 0).."   •   "..tostring(p:GetAttribute("Fans")or 0).." FANS   •   "..totalProgress().." AMELIORATIONS   •   R"..tostring(p:GetAttribute("Prestige")or 0).."   •   TOKENS "..tostring(p:GetAttribute("RebirthTokens")or 0)end
 for _,a in ipairs({"Cash","Fans","Prestige","RebirthTokens","StageLevel","SoundLevel","LightsLevel","FXLevel","CrowdLevel","StandsLevel","MarketingLevel","StaffLevel"})do p:GetAttributeChangedSignal(a):Connect(refresh)end;refresh()
--- Free dance: social emote usable anywhere on the festival grounds.
-local freeDance=Instance.new("TextButton");freeDance.Name="FreeDanceButton";freeDance.Size=UDim2.fromOffset(122,42);freeDance.Position=UDim2.new(1,-140,1,-62);freeDance.BackgroundColor3=Color3.fromRGB(22,27,38);freeDance.TextColor3=Color3.new(1,1,1);freeDance.Font=Enum.Font.GothamBold;freeDance.TextSize=13;freeDance.Text="💃 DANSER";freeDance.Parent=gui;corner(freeDance,11);stroke(freeDance)
-local dancing=false;local danceConn=nil;local danceBase=nil
+-- Social dances: one compact button opens a small dance selector.
+local freeDance=Instance.new("TextButton");freeDance.Name="FreeDanceButton";freeDance.Size=UDim2.fromOffset(122,42);freeDance.Position=UDim2.new(1,-140,1,-62);freeDance.BackgroundColor3=Color3.fromRGB(22,27,38);freeDance.TextColor3=Color3.new(1,1,1);freeDance.Font=Enum.Font.GothamBold;freeDance.TextSize=13;freeDance.Text="DANSER";freeDance.Parent=gui;corner(freeDance,11);stroke(freeDance)
+local danceMenu=nil;local dancing=false;local danceConn=nil;local danceBase=nil;local danceStyle="RAVE"
+local danceStyles={"RAVE","JUMPSTYLE","HARDSTYLE","GABBER","SHUFFLE","BOUNCE"}
 local function stopFreeDance()
- dancing=false;freeDance.Text="💃 DANSER"
- if danceConn then danceConn:Disconnect();danceConn=nil end
- local char=p.Character;local root=char and char:FindFirstChild("HumanoidRootPart")
- if root and danceBase then root.CFrame=CFrame.new(root.Position)*CFrame.Angles(0,danceBase,0)end
+ dancing=false;freeDance.Text="DANSER";if danceConn then danceConn:Disconnect();danceConn=nil end
+ local char=p.Character;local root=char and char:FindFirstChild("HumanoidRootPart");if root and danceBase then root.CFrame=CFrame.new(root.Position)*CFrame.Angles(0,danceBase,0,0)end
 end
-local function startFreeDance()
- if dancing then stopFreeDance();return end
- local char=p.Character;local hum=char and char:FindFirstChildOfClass("Humanoid");local root=char and char:FindFirstChild("HumanoidRootPart");if not hum or not root then return end
- dancing=true;freeDance.Text="■ ARRÊTER";local _,yaw,_=root.CFrame:ToOrientation();danceBase=yaw;local t=0
+local function startFreeDance(style)
+ stopFreeDance();danceStyle=style;local char=p.Character;local hum=char and char:FindFirstChildOfClass("Humanoid");local root=char and char:FindFirstChild("HumanoidRootPart");if not hum or not root then return end
+ dancing=true;freeDance.Text=style.."  X";local _,yaw,_=root.CFrame:ToOrientation();danceBase=yaw;local t=0
  danceConn=RunService.RenderStepped:Connect(function(dt)
-  if not dancing or not root.Parent then stopFreeDance();return end
-  if hum.MoveDirection.Magnitude>.08 then stopFreeDance();return end
-  t+=dt;local bounce=math.abs(math.sin(t*5.4))*.18;root.CFrame=CFrame.new(root.Position+Vector3.new(0,bounce,0))*CFrame.Angles(0,danceBase+math.sin(t*2.6)*.22,math.sin(t*5.4)*.055)
+  if not dancing or not root.Parent then stopFreeDance();return end;if hum.MoveDirection.Magnitude>.08 then stopFreeDance();return end
+  t+=dt;local y=0;local turn=0;local roll=0;local pitch=0
+  if style=="RAVE"then y=math.abs(math.sin(t*6))*.16;turn=math.sin(t*3)*.18;roll=math.sin(t*6)*.05
+  elseif style=="JUMPSTYLE"then y=math.abs(math.sin(t*9))*.28;turn=math.sin(t*4.5)*.12;pitch=math.sin(t*9)*.07
+  elseif style=="HARDSTYLE"then y=math.abs(math.sin(t*7.2))*.22;turn=math.sin(t*7.2)*.16;roll=math.sin(t*3.6)*.07
+  elseif style=="GABBER"then y=math.abs(math.sin(t*11))*.18;turn=math.sin(t*5.5)*.22;pitch=math.sin(t*11)*.06
+  elseif style=="SHUFFLE"then y=math.abs(math.sin(t*8))*.12;turn=math.sin(t*4)*.34;roll=math.sin(t*8)*.08
+  else y=math.abs(math.sin(t*5))*.3;turn=math.sin(t*2.5)*.28 end
+  root.CFrame=CFrame.new(root.Position+Vector3.new(0,y,0))*CFrame.Angles(pitch,danceBase+turn,roll)
  end)
 end
-freeDance.MouseButton1Click:Connect(startFreeDance)
+local function toggleDanceMenu()
+ if dancing then stopFreeDance();return end
+ if danceMenu then danceMenu:Destroy();danceMenu=nil;return end
+ danceMenu=Instance.new("Frame");danceMenu.Size=UDim2.fromOffset(260,156);danceMenu.Position=UDim2.new(1,-278,1,-224);danceMenu.BackgroundColor3=Color3.fromRGB(13,16,23);danceMenu.Parent=gui;corner(danceMenu,14);stroke(danceMenu)
+ local grid=Instance.new("UIGridLayout");grid.CellSize=UDim2.fromOffset(116,40);grid.CellPadding=UDim2.fromOffset(8,8);grid.HorizontalAlignment=Enum.HorizontalAlignment.Center;grid.VerticalAlignment=Enum.VerticalAlignment.Center;grid.Parent=danceMenu
+ for _,style in ipairs(danceStyles)do local bt=Instance.new("TextButton");bt.BackgroundColor3=Color3.fromRGB(29,34,46);bt.TextColor3=Color3.new(1,1,1);bt.Font=Enum.Font.GothamBold;bt.TextSize=11;bt.Text=style;bt.Parent=danceMenu;corner(bt,9);bt.MouseButton1Click:Connect(function()danceMenu:Destroy();danceMenu=nil;startFreeDance(style)end)end
+end
+freeDance.MouseButton1Click:Connect(toggleDanceMenu)
 p.CharacterAdded:Connect(function()if dancing then stopFreeDance()end end)
 
 local danceRemote=ReplicatedStorage:WaitForChild("DanceBattleRemote")
