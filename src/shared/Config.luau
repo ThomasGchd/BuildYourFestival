@@ -5,14 +5,14 @@ Config.MaxStageLevel = 25
 Config.MainstageProductId = 0 -- Replace with the real Developer Product ID before publishing
 Config.StageUpgradeCosts = {50,120,250,500,900,1500,2500,4000}
 Config.Branches = {
- Stage={label="SCENE",base=90,growth=1.48,max=25},
- Sound={label="SON",base=70,growth=1.46,max=30},
- Lights={label="LIGHTS",base=80,growth=1.47,max=30},
- FX={label="FX",base=120,growth=1.52,max=25},
- Crowd={label="PUBLIC",base=65,growth=1.44,max=40},
- Stands={label="STANDS",base=100,growth=1.50,max=30},
- Marketing={label="MARKETING",base=110,growth=1.53,max=35},
- Staff={label="EQUIPE",base=95,growth=1.49,max=35},
+ Stage={label="SCENE",base=100,growth=1.34,max=40},
+ Sound={label="SON",base=80,growth=1.32,max=40},
+ Lights={label="LIGHTS",base=90,growth=1.33,max=40},
+ FX={label="FX",base=130,growth=1.35,max=35},
+ Crowd={label="PUBLIC",base=75,growth=1.30,max=50},
+ Stands={label="STANDS",base=110,growth=1.34,max=40},
+ Marketing={label="MARKETING",base=120,growth=1.34,max=45},
+ Staff={label="EQUIPE",base=105,growth=1.33,max=45},
 }
 Config.PrestigeBaseCost = 250000
 Config.TycoonPhases = {
