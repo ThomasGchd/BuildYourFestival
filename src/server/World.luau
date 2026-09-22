@@ -1,4 +1,5 @@
 local Lighting=game:GetService("Lighting")
+local TweenService=game:GetService("TweenService")
 local M={}
 local function part(parent,name,size,cf,color,material)
  local p=Instance.new("Part");p.Name=name;p.Size=size;p.CFrame=cf;p.Anchored=true;p.Color=color;p.Material=material or Enum.Material.SmoothPlastic;p.Parent=parent;return p
@@ -239,4 +240,22 @@ function M.build(Config)
  local spawn=Instance.new("SpawnLocation");spawn.Name="FestivalSpawn";spawn.Size=Vector3.new(18,1,14);spawn.Position=Vector3.new(0,1,285);spawn.Anchored=true;spawn.Neutral=true;spawn.Transparency=1;spawn.CanCollide=false;spawn.Duration=0;spawn.Parent=root
  return {root=root,plots=plots,stage=stage,screen=screen,sound=sound,console=console}
 end
+
+-- Give ambient visitors life without a Heartbeat connection per NPC.
+task.spawn(function()
+ task.wait(2)
+ while root.Parent do
+  local visitors=root:FindFirstChild("AmbientVisitors")
+  if visitors then
+   for i,m in ipairs(visitors:GetChildren())do
+    if m:IsA("Model")then
+     local parts={};for _,q in ipairs(m:GetChildren())do if q:IsA("BasePart")then table.insert(parts,q)end end
+     local dx=((i%3)-1)*3;local dz=((i%2)*2-1)*2
+     for _,q in ipairs(parts)do TweenService:Create(q,TweenInfo.new(1.8+((i%4)*.25),Enum.EasingStyle.Sine,Enum.EasingDirection.InOut,0,true),{Position=q.Position+Vector3.new(dx*.25,0,dz*.25)}):Play()end
+    end
+   end
+  end
+  task.wait(4)
+ end
+end)
 return M
