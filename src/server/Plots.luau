@@ -121,6 +121,18 @@ local function buildStage(plot,player)
  if stage>=15 then part(f,"MegaRoof",Vector3.new(96,4,38),pos+Vector3.new(0,34,-29),Color3.fromRGB(18,20,25),Enum.Material.Metal)end
  if stage>=20 then for _,x in ipairs({-48,48})do part(f,"SideScreen",Vector3.new(15,20,2),pos+Vector3.new(x,18,-34),Color3.fromRGB(28,42,58),Enum.Material.SmoothPlastic)end end
  if stage>=25 then part(f,"FestivalCrown",Vector3.new(105,5,5),pos+Vector3.new(0,40,-31),s.accent,Enum.Material.SmoothPlastic)end
+ if stage>=30 then
+  for _,x in ipairs({-56,56})do part(f,"MegaPylon",Vector3.new(5,44,5),pos+Vector3.new(x,22,-31),Color3.fromRGB(42,45,52),Enum.Material.DiamondPlate);part(f,"PylonAccent",Vector3.new(6,3,6),pos+Vector3.new(x,43,-31),s.secondary,Enum.Material.Neon)end
+ end
+ if stage>=35 then
+  part(f,"SkylineHeader",Vector3.new(118,5,6),pos+Vector3.new(0,47,-31),Color3.fromRGB(18,20,25),Enum.Material.Metal)
+  for _,x in ipairs({-42,-21,0,21,42})do part(f,"HeaderPixel",Vector3.new(12,2,.8),pos+Vector3.new(x,47,-27.6),x%42==0 and s.accent or s.secondary,Enum.Material.Neon)end
+ end
+ if stage>=40 then
+  part(f,"FinalCrown",Vector3.new(128,3,4),pos+Vector3.new(0,53,-31),s.accent,Enum.Material.Neon)
+  for _,x in ipairs({-60,-30,0,30,60})do part(f,"FinalSpire",Vector3.new(2,12,2),pos+Vector3.new(x,58,-31),Color3.fromRGB(72,75,84),Enum.Material.DiamondPlate)end
+  sign((player:GetAttribute("FestivalName")or"NOVA").." • HEADLINER",Vector3.new(0,51,-27),Vector3.new(38,4,.7))
+ end
  -- Venue archetypes change the architecture, not only its colour.
  if styleKey=="Cave" then
   if stage>=1 then
@@ -320,7 +332,7 @@ function M.assign(player,world,Config)
        task.wait(1)
       end
       local hype=pp:GetAttribute("EventHype")or 0;local crowdLv=branchLevel(pp,"Crowd");local standsLv=branchLevel(pp,"Stands")
-      local stageLv=branchLevel(pp,"Stage");local soundLv=branchLevel(pp,"Sound");local marketingLv=branchLevel(pp,"Marketing");local staffLv=branchLevel(pp,"Staff");local baseEvent=190+stageLv*20+soundLv*15+crowdLv*17+standsLv*28+marketingLv*18+staffLv*12;local payout=math.floor(baseEvent*(.9+hype/500));local gainedFans=math.floor(12+crowdLv*3+marketingLv*3+hype*.12)
+      local stageLv=branchLevel(pp,"Stage");local soundLv=branchLevel(pp,"Sound");local marketingLv=branchLevel(pp,"Marketing");local staffLv=branchLevel(pp,"Staff");local baseEvent=190+stageLv*20+soundLv*15+crowdLv*17+standsLv*28+marketingLv*18+staffLv*12;local prestige=pp:GetAttribute("Prestige")or 0;local tokens=pp:GetAttribute("RebirthTokens")or 0;local permanent=1+prestige*.20+tokens*.04;local payout=math.floor(baseEvent*(.9+hype/500)*permanent);local gainedFans=math.floor(12+crowdLv*3+marketingLv*3+hype*.12)
       pp:SetAttribute("Cash",(pp:GetAttribute("Cash")or 0)+payout);pp:SetAttribute("Fans",(pp:GetAttribute("Fans")or 0)+gainedFans);pp:SetAttribute("LastEventPayout",payout);pp:SetAttribute("LastEventFans",gainedFans);pp:SetAttribute("EventActive",false);pp:SetAttribute("EventTime",0);pp:SetAttribute("EventVisitors",0);if eventPlot then clearEventCrowd(eventPlot);setShowLights(eventPlot,false)end
      end)
     elseif action=="BUY" and Config.Branches[key] then
@@ -331,8 +343,9 @@ function M.assign(player,world,Config)
      local ts=pp:GetAttribute("TutorialStep")or 1
      if ts==2 and key=="Stage" then pp:SetAttribute("TutorialStep",3) elseif ts==3 and key=="Crowd" then pp:SetAttribute("TutorialStep",4) end
      local pi=pp:GetAttribute("PlotIndex");local target=pi and getPlot(world,pi);if target then buildStage(target,pp) end
-    elseif action=="STYLE" and styles[key] then pp:SetAttribute("StageStyle",key);local pi=pp:GetAttribute("PlotIndex");local target=pi and getPlot(world,pi);if target then buildStage(target,pp) end
+    elseif action=="STYLE" and styles[key] then if pp:GetAttribute("EventActive")then return end;pp:SetAttribute("StageStyle",key);local pi=pp:GetAttribute("PlotIndex");local target=pi and getPlot(world,pi);if target then buildStage(target,pp) end
     elseif action=="CUSTOMIZE" then
+     if pp:GetAttribute("EventActive")then return end
      local kind=tostring(key);value=tostring(value)
      if kind=="PALETTE" and palettes[value]then pp:SetAttribute("FestivalPalette",value)
      elseif kind=="NAME" and festivalNames[value]then pp:SetAttribute("FestivalName",value)
