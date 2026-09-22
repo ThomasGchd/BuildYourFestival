@@ -1,9 +1,9 @@
 local Players=game:GetService("Players")
 local M={};local owners={}
 local styles={
- Neon={main=Color3.fromRGB(91,55,220),accent=Color3.fromRGB(40,225,255),secondary=Color3.fromRGB(255,55,190)},
- Industrial={main=Color3.fromRGB(37,40,46),accent=Color3.fromRGB(255,104,38),secondary=Color3.fromRGB(230,215,190)},
- Nature={main=Color3.fromRGB(48,102,58),accent=Color3.fromRGB(245,201,69),secondary=Color3.fromRGB(95,210,125)}
+ Mainstage={label="MAIN STAGE",main=Color3.fromRGB(31,34,42),accent=Color3.fromRGB(116,88,235),secondary=Color3.fromRGB(55,205,225)},
+ Cave={label="CAVE",main=Color3.fromRGB(20,22,25),accent=Color3.fromRGB(220,55,48),secondary=Color3.fromRGB(245,135,55)},
+ Boiler={label="BOILER",main=Color3.fromRGB(38,39,43),accent=Color3.fromRGB(235,185,65),secondary=Color3.fromRGB(220,75,65)}
 }
 local function getPlot(world,i)return world.plots:FindFirstChild("Plot"..i)end
 local function part(parent,name,size,pos,color,material)
@@ -67,7 +67,7 @@ end
 local function buildStage(plot,player)
  local old=plot:FindFirstChild("PlayerBuild");if old then old:Destroy()end
  local f=Instance.new("Folder");f.Name="PlayerBuild";f.Parent=plot
- local s=styles[player:GetAttribute("StageStyle")] or styles.Neon;local pos=plot.Floor.Position
+ local styleKey=player:GetAttribute("StageStyle")or"Mainstage";local s=styles[styleKey]or styles.Mainstage;local pos=plot.Floor.Position
  local stage=branchLevel(player,"Stage");local sound=branchLevel(player,"Sound");local lights=branchLevel(player,"Lights");local fx=branchLevel(player,"FX");local crowd=branchLevel(player,"Crowd");local stands=branchLevel(player,"Stands")
  local tier=math.floor(stage/5);local prestige=player:GetAttribute("Prestige")or 0
  local function sign(text,offset,size)
@@ -109,6 +109,29 @@ local function buildStage(plot,player)
  if stage>=15 then part(f,"MegaRoof",Vector3.new(96,4,38),pos+Vector3.new(0,34,-29),Color3.fromRGB(18,20,25),Enum.Material.Metal)end
  if stage>=20 then for _,x in ipairs({-48,48})do part(f,"SideScreen",Vector3.new(15,20,2),pos+Vector3.new(x,18,-34),Color3.fromRGB(28,42,58),Enum.Material.SmoothPlastic)end end
  if stage>=25 then part(f,"FestivalCrown",Vector3.new(105,5,5),pos+Vector3.new(0,40,-31),s.accent,Enum.Material.SmoothPlastic)end
+ -- Venue archetypes change the architecture, not only its colour.
+ if styleKey=="Cave" then
+  if stage>=1 then
+   part(f,"CaveBack",Vector3.new(54,16,4),pos+Vector3.new(0,8,-42),Color3.fromRGB(18,19,21),Enum.Material.Concrete)
+   for _,x in ipairs({-29,29})do part(f,"CaveWall",Vector3.new(6,18,30),pos+Vector3.new(x,9,-29),Color3.fromRGB(24,25,27),Enum.Material.Concrete)end
+  end
+  if stage>=4 then
+   part(f,"CaveCeiling",Vector3.new(64,4,34),pos+Vector3.new(0,19,-29),Color3.fromRGB(17,18,20),Enum.Material.Concrete)
+   for x=-24,24,12 do part(f,"CavePipe",Vector3.new(2,2,31),pos+Vector3.new(x,16,-28),Color3.fromRGB(65,67,70),Enum.Material.Metal)end
+  end
+  if stage>=7 then sign("UNDERGROUND",Vector3.new(0,13,-39),Vector3.new(28,4,.6))end
+ elseif styleKey=="Boiler" then
+  if stage>=1 then
+   part(f,"BoilerPlatform",Vector3.new(30,2,18),pos+Vector3.new(0,1,-25),Color3.fromRGB(50,51,55),Enum.Material.DiamondPlate)
+   -- crowd surrounds the booth: boiler-room feeling.
+   for _,z in ipairs({-39,-11})do part(f,"BoilerRail",Vector3.new(58,2,1),pos+Vector3.new(0,1,z),Color3.fromRGB(105,108,112),Enum.Material.Metal)end
+  end
+  if stage>=4 then
+   for _,x in ipairs({-34,34})do part(f,"BoilerTower",Vector3.new(3,20,3),pos+Vector3.new(x,10,-25),Color3.fromRGB(73,75,80),Enum.Material.DiamondPlate)end
+   part(f,"BoilerTruss",Vector3.new(70,3,3),pos+Vector3.new(0,20,-25),Color3.fromRGB(73,75,80),Enum.Material.DiamondPlate)
+  end
+  if stage>=7 then sign("360° BOOTH",Vector3.new(0,9,-37),Vector3.new(24,3,.6))end
+ end
 
  -- Sound grows from tiny pole speakers into a proper festival PA.
  if sound>=1 then
@@ -201,7 +224,7 @@ end
 function M.assign(player,world,Config)
  if player:GetAttribute("PlotIndex")then return end
  for i=1,Config.PlotCount do if not owners[i]then
-  owners[i]=player;player:SetAttribute("PlotIndex",i);player:SetAttribute("Cash",Config.StartCash);player:SetAttribute("Fans",0);player:SetAttribute("StageStyle","Neon");player:SetAttribute("Prestige",0);player:SetAttribute("RebirthTokens",0);player:SetAttribute("DJCombo",0);player:SetAttribute("TutorialStep",1);player:SetAttribute("EventActive",false);player:SetAttribute("EventHype",0);player:SetAttribute("EventTime",0);player:SetAttribute("LastEventPayout",0);player:SetAttribute("LastEventFans",0);player:SetAttribute("ActivityScore",0);player:SetAttribute("LastActivity",0)
+  owners[i]=player;player:SetAttribute("PlotIndex",i);player:SetAttribute("Cash",Config.StartCash);player:SetAttribute("Fans",0);player:SetAttribute("StageStyle","Mainstage");player:SetAttribute("Prestige",0);player:SetAttribute("RebirthTokens",0);player:SetAttribute("DJCombo",0);player:SetAttribute("TutorialStep",1);player:SetAttribute("EventActive",false);player:SetAttribute("EventHype",0);player:SetAttribute("EventTime",0);player:SetAttribute("LastEventPayout",0);player:SetAttribute("LastEventFans",0);player:SetAttribute("ActivityScore",0);player:SetAttribute("LastActivity",0)
   for key in pairs(Config.Branches)do player:SetAttribute(key.."Level",0)end
   local plot=getPlot(world,i);do
    local ownerSign=plot:FindFirstChild("OwnerSign")
