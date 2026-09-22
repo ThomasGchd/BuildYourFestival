@@ -32,7 +32,9 @@ local function buildStage(plot,player)
  local deckPrompt=Instance.new("ProximityPrompt");deckPrompt.ActionText="MIXER";deckPrompt.ObjectText="PLATINES DJ";deckPrompt.RequiresLineOfSight=false;deckPrompt.MaxActivationDistance=10;deckPrompt.Parent=deck
  deckPrompt.Triggered:Connect(function(pp)
   if pp~=player then return end
-  local combo=(pp:GetAttribute("DJCombo")or 0)+1;pp:SetAttribute("DJCombo",combo);pp:SetAttribute("Cash",(pp:GetAttribute("Cash")or 0)+20+combo*3);pp:SetAttribute("Fans",(pp:GetAttribute("Fans")or 0)+5+math.floor(combo/3));if (pp:GetAttribute("TutorialStep")or 1)==4 then pp:SetAttribute("TutorialStep",5) end;deckPrompt.ObjectText="PLATINES DJ • COMBO x"..combo
+  local combo=(pp:GetAttribute("DJCombo")or 0)+1;pp:SetAttribute("DJCombo",combo)
+  if pp:GetAttribute("EventActive") then pp:SetAttribute("EventHype",math.min(100,(pp:GetAttribute("EventHype")or 0)+12+combo*2)) else pp:SetAttribute("Fans",(pp:GetAttribute("Fans")or 0)+2) end
+  if (pp:GetAttribute("TutorialStep")or 1)==4 then pp:SetAttribute("TutorialStep",5) end;deckPrompt.ObjectText="PLATINES DJ • COMBO x"..combo
   task.delay(4,function()if pp.Parent then pp:SetAttribute("DJCombo",0);if deckPrompt.Parent then deckPrompt.ObjectText="PLATINES DJ"end end end)
  end)
 
@@ -90,7 +92,7 @@ end
 function M.assign(player,world,Config)
  if player:GetAttribute("PlotIndex")then return end
  for i=1,Config.PlotCount do if not owners[i]then
-  owners[i]=player;player:SetAttribute("PlotIndex",i);player:SetAttribute("Cash",Config.StartCash);player:SetAttribute("Fans",0);player:SetAttribute("StageStyle","Neon");player:SetAttribute("Prestige",0);player:SetAttribute("RebirthTokens",0);player:SetAttribute("DJCombo",0);player:SetAttribute("TutorialStep",1)
+  owners[i]=player;player:SetAttribute("PlotIndex",i);player:SetAttribute("Cash",Config.StartCash);player:SetAttribute("Fans",0);player:SetAttribute("StageStyle","Neon");player:SetAttribute("Prestige",0);player:SetAttribute("RebirthTokens",0);player:SetAttribute("DJCombo",0);player:SetAttribute("TutorialStep",1);player:SetAttribute("EventActive",false);player:SetAttribute("EventHype",0);player:SetAttribute("EventTime",0)
   for key in pairs(Config.Branches)do player:SetAttribute(key.."Level",0)end
   local plot=getPlot(world,i);plot.OwnerSign.OwnerGui.Text.Text=player.DisplayName.." • FESTIVAL";buildStage(plot,player)
   -- Upgrades are UI-driven: keep the physical festival clean and readable.
@@ -99,7 +101,23 @@ function M.assign(player,world,Config)
   if not upgradeRemote:GetAttribute("ServerBound") then
    upgradeRemote:SetAttribute("ServerBound",true)
    upgradeRemote.OnServerEvent:Connect(function(pp,action,key)
-    if action=="BUY" and Config.Branches[key] then
+    if action=="START_EVENT" then
+     if pp:GetAttribute("EventActive") then return end
+     pp:SetAttribute("EventActive",true);pp:SetAttribute("EventHype",20);pp:SetAttribute("EventTime",45)
+     task.spawn(function()
+      for remaining=45,1,-1 do
+       if not pp.Parent then return end
+       pp:SetAttribute("EventTime",remaining)
+       local hype=pp:GetAttribute("EventHype")or 0
+       local crowdLv=branchLevel(pp,"Crowd");local marketing=branchLevel(pp,"Marketing")
+       pp:SetAttribute("EventHype",math.max(0,hype-1+math.floor((crowdLv+marketing)/25)))
+       task.wait(1)
+      end
+      local hype=pp:GetAttribute("EventHype")or 0;local crowdLv=branchLevel(pp,"Crowd");local standsLv=branchLevel(pp,"Stands")
+      local payout=math.floor(180+(hype*5)+(crowdLv*22)+(standsLv*28));local gainedFans=math.floor(15+hype*.55+crowdLv*4)
+      pp:SetAttribute("Cash",(pp:GetAttribute("Cash")or 0)+payout);pp:SetAttribute("Fans",(pp:GetAttribute("Fans")or 0)+gainedFans);pp:SetAttribute("LastEventPayout",payout);pp:SetAttribute("EventActive",false);pp:SetAttribute("EventTime",0)
+     end)
+    elseif action=="BUY" and Config.Branches[key] then
      local lv=branchLevel(pp,key);local branch=Config.Branches[key];if lv>=branch.max then return end
      local price=cost(Config,key,lv);local cash=pp:GetAttribute("Cash")or 0;if cash<price then return end
      pp:SetAttribute("Cash",cash-price);pp:SetAttribute(key.."Level",lv+1);pp:SetAttribute("Fans",(pp:GetAttribute("Fans")or 0)+10+(lv+1)*5)
@@ -132,7 +150,7 @@ function M.start(world,Config)
   local phase=Config.TycoonPhases[1].name;local nextNeed=nil
   for _,info in ipairs(Config.TycoonPhases)do if total>=info.need then phase=info.name else nextNeed=info.need;break end end
   p:SetAttribute("FestivalPhase",phase);p:SetAttribute("IncomePerTick",income);p:SetAttribute("NextPhaseNeed",nextNeed or -1)
-  p:SetAttribute("Cash",(p:GetAttribute("Cash")or 0)+income);p:SetAttribute("Fans",(p:GetAttribute("Fans")or 0)+math.max(1,crowd+math.floor(marketing*.7)+prestige*3))
+  p:SetAttribute("Cash",(p:GetAttribute("Cash")or 0)+math.max(2,math.floor(income*.08)))
  end end end)
 end
 return M
