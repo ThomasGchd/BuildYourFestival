@@ -43,7 +43,7 @@ function M.build(Config)
  local conveyors=Instance.new("Folder");conveyors.Name="MovingWalkways";conveyors.Parent=root
  local function walkway(name,x,direction)
   local belt=part(conveyors,name,Vector3.new(12,1.15,610),CFrame.new(x,.58,-55),Color3.fromRGB(28,31,38),Enum.Material.SmoothPlastic)
-  belt.AssemblyLinearVelocity=Vector3.new(0,0,direction*34)
+  belt.AssemblyLinearVelocity=Vector3.new(0,0,direction*55)
   belt.CustomPhysicalProperties=PhysicalProperties.new(.7,.15,0,1,1)
   for z=-340,225,18 do
    local stripe=part(conveyors,"BeltStripe",Vector3.new(8,.08,2),CFrame.new(x,1.2,z),Color3.fromRGB(70,210,255),Enum.Material.Neon)
