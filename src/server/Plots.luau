@@ -20,7 +20,7 @@ local function buildStage(plot,player)
  local function sign(text,offset,size)
   local board=part(f,"Sign",size or Vector3.new(24,4,.6),pos+offset,Color3.fromRGB(20,23,29),Enum.Material.Metal)
   local g=Instance.new("SurfaceGui");g.Face=Enum.NormalId.Front;g.Parent=board
-  local t=Instance.new("TextLabel");t.Size=UDim2.fromScale(1,1);t.BackgroundTransparency=1;t.Text=text;t.TextColor3=Color3.new(1,1,1);t.Font=Enum.Font.GothamBold;t.TextScaled=true;t.Parent=g
+  local t=Instance.new("TextLabel");t.Size=UDim2.fromScale(1,1);t.BackgroundTransparency=1;t.Text=text;t.TextColor3=Color3.new(1,1,1);t.Font=Enum.Font.GothamBold;t.TextSize=22;t.TextWrapped=false;t.TextXAlignment=Enum.TextXAlignment.Center;t.TextYAlignment=Enum.TextYAlignment.Center;t.Parent=g;local pad=Instance.new("UIPadding");pad.PaddingLeft=UDim.new(0,8);pad.PaddingRight=UDim.new(0,8);pad.Parent=t
  end
 
  -- The slot starts almost empty: one DJ table, decks and a cable case.
