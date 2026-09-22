@@ -5,9 +5,10 @@ local M={}
 function M.start(world,Config)
  local previous=ReplicatedStorage:FindFirstChild("FestivalMusic");if previous then previous:Destroy() end
  local remote=Instance.new("RemoteEvent");remote.Name="FestivalMusic";remote.Parent=ReplicatedStorage
- local queue={};local pending={};local default=1;local playToken=0
+ local queue={};local pending={};local default=1;local playToken=0;local current=nil
  local function play(entry)
-  playToken+=1;local token=playToken
+  if not entry then return end
+  playToken+=1;local token=playToken;current=entry
   world.sound:Stop();world.sound.SoundId=entry.soundId;world.sound.TimePosition=0
   local loaded=false
   local connection=world.sound.Loaded:Connect(function()loaded=true end)
@@ -35,8 +36,11 @@ function M.start(world,Config)
   if action~="SELECT" or not Config.Music[index] then return end
   pending[p.UserId]=index
   if Config.MainstageProductId==0 then
-   local e=Config.Music[index];table.insert(queue,{name=e.name,soundId=e.soundId,by=p.DisplayName});remote:FireAllClients("QUEUED",e.name,p.DisplayName,#queue)
-   if not world.sound.IsPlaying then nextTrack() end
+   -- Studio/free-test mode: selection is immediate so the chooser actually hears the requested track.
+   local e=Config.Music[index]
+   queue={}
+   play({name=e.name,soundId=e.soundId,by=p.DisplayName})
+   remote:FireAllClients("QUEUED",e.name,p.DisplayName,0)
   else MarketplaceService:PromptProductPurchase(p,Config.MainstageProductId) end
  end)
  MarketplaceService.ProcessReceipt=function(receipt)
@@ -44,6 +48,7 @@ function M.start(world,Config)
   local p=Players:GetPlayerByUserId(receipt.PlayerId);local i=p and pending[p.UserId]
   if not p or not i then return Enum.ProductPurchaseDecision.NotProcessedYet end
   local e=Config.Music[i];table.insert(queue,{name=e.name,soundId=e.soundId,by=p.DisplayName});pending[p.UserId]=nil
+  remote:FireAllClients("QUEUED",e.name,p.DisplayName,#queue)
   if not world.sound.IsPlaying then nextTrack() end
   return Enum.ProductPurchaseDecision.PurchaseGranted
  end
