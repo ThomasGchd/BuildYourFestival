@@ -33,9 +33,9 @@ function M.build(Config)
  local bloom=Lighting:FindFirstChild("FestivalBloom") or Instance.new("BloomEffect");bloom.Name="FestivalBloom";bloom.Intensity=.7;bloom.Size=30;bloom.Threshold=1.2;bloom.Parent=Lighting
  local atmosphere=Lighting:FindFirstChild("FestivalAtmosphere") or Instance.new("Atmosphere");atmosphere.Name="FestivalAtmosphere";atmosphere.Density=.22;atmosphere.Haze=1.2;atmosphere.Parent=Lighting
  local root=Instance.new("Folder");root.Name="FestivalWorld";root.Parent=workspace
- part(root,"Ground",Vector3.new(650,2,900),CFrame.new(0,-1,-100),Color3.fromRGB(42,86,48),Enum.Material.Grass)
- part(root,"Festival Avenue",Vector3.new(82,.6,650),CFrame.new(0,.36,-70),Color3.fromRGB(57,58,65),Enum.Material.Asphalt)
- part(root,"Mainstage Plaza",Vector3.new(330,.6,170),CFrame.new(0,.38,-430),Color3.fromRGB(49,50,57),Enum.Material.Concrete)
+ part(root,"Ground",Vector3.new(650,2,900),CFrame.new(0,-1.5,-100),Color3.fromRGB(42,86,48),Enum.Material.SmoothPlastic)
+ part(root,"Festival Avenue",Vector3.new(82,1,650),CFrame.new(0,0,-70),Color3.fromRGB(57,58,65),Enum.Material.SmoothPlastic)
+ part(root,"Mainstage Plaza",Vector3.new(330,1,170),CFrame.new(0,0,-430),Color3.fromRGB(49,50,57),Enum.Material.SmoothPlastic)
  -- entrance
  for _,x in ipairs({-43,43}) do truss(root,Vector3.new(x,0,250),32) end
  part(root,"EntranceTop",Vector3.new(88,3,3),CFrame.new(0,31,250),Color3.fromRGB(35,37,43),Enum.Material.Metal)
@@ -57,10 +57,10 @@ function M.build(Config)
  for row=0,3 do for _,side in ipairs({-1,1}) do
   local i=row*2+(side==1 and 2 or 1);local model=Instance.new("Model");model.Name="Plot"..i;model:SetAttribute("Index",i);model.Parent=plots
   local z=135-row*115;local x=side*155
-  local floor=part(model,"Floor",Vector3.new(135,.7,96),CFrame.new(x,.42,z),Color3.fromRGB(53,96,57),Enum.Material.Grass);model.PrimaryPart=floor
+  local floor=part(model,"Floor",Vector3.new(135,1,96),CFrame.new(x,0,z),Color3.fromRGB(53,96,57),Enum.Material.SmoothPlastic);model.PrimaryPart=floor
   -- subtle plot trim instead of colored blocks
-  for _,dz in ipairs({-47,47}) do part(model,"Trim",Vector3.new(136,.35,1),CFrame.new(x,.55,z+dz),Color3.fromRGB(90,92,98),Enum.Material.Metal) end
-  for _,dx in ipairs({-67,67}) do part(model,"Trim",Vector3.new(1,.35,95),CFrame.new(x+dx,.55,z),Color3.fromRGB(90,92,98),Enum.Material.Metal) end
+  for _,dz in ipairs({-47,47}) do part(model,"Trim",Vector3.new(136,.35,1),CFrame.new(x,.56,z+dz),Color3.fromRGB(90,92,98),Enum.Material.Metal) end
+  for _,dx in ipairs({-67,67}) do part(model,"Trim",Vector3.new(1,.35,95),CFrame.new(x+dx,.56,z),Color3.fromRGB(90,92,98),Enum.Material.Metal) end
   local sign=part(model,"OwnerSign",Vector3.new(27,7,1),CFrame.new(x-side*53,4,z+41),Color3.fromRGB(20,22,28),Enum.Material.Metal)
   local gui=Instance.new("BillboardGui");gui.Name="OwnerGui";gui.Size=UDim2.fromOffset(210,52);gui.StudsOffset=Vector3.new(0,4,0);gui.MaxDistance=55;gui.Parent=sign
   local txt=Instance.new("TextLabel");txt.Name="Text";txt.Size=UDim2.fromScale(1,1);txt.BackgroundTransparency=.15;txt.BackgroundColor3=Color3.fromRGB(18,20,26);txt.TextColor3=Color3.new(1,1,1);txt.Font=Enum.Font.GothamBold;txt.TextScaled=true;txt.Text="SLOT LIBRE";txt.Parent=gui
