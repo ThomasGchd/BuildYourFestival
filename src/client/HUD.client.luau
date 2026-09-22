@@ -13,6 +13,21 @@ end
 local function totalProgress()local t=0;for _,k in ipairs({"Stage","Sound","Lights","FX","Crowd","Stands","Marketing","Staff"})do t+=p:GetAttribute(k.."Level")or 0 end;return t end
 local stats=label(UDim2.new(1,-540,0,18),UDim2.fromOffset(520,44),"")
 local now=label(UDim2.new(.5,-220,1,-58),UDim2.fromOffset(440,40),"MAINSTAGE • chargement...")
+local objective=label(UDim2.new(.5,-230,0,18),UDim2.fromOffset(460,62),"")
+objective.TextWrapped=true;objective.TextSize=14
+local function refreshObjective()
+ local step=p:GetAttribute("TutorialStep")or 1
+ local messages={
+  [1]="OBJECTIF  •  Achète ta première amélioration SON",
+  [2]="OBJECTIF  •  Construis le premier niveau de ta SCÈNE",
+  [3]="OBJECTIF  •  Débloque ton premier espace PUBLIC",
+  [4]="OBJECTIF  •  Monte sur scène et utilise les PLATINES",
+  [5]="FESTIVAL LANCÉ  •  Développe-le comme tu veux"
+ }
+ objective.Text=messages[step]or messages[5]
+ objective.Visible=step<=5
+end
+p:GetAttributeChangedSignal("TutorialStep"):Connect(refreshObjective);refreshObjective()
 local cam=Instance.new("TextButton");cam.Position=UDim2.new(0,18,1,-58);cam.Size=UDim2.fromOffset(185,40);cam.BackgroundColor3=Color3.fromRGB(12,15,22);cam.TextColor3=Color3.new(1,1,1);cam.Font=Enum.Font.GothamBold;cam.TextSize=13;cam.Text="CAMÉRA MUSICALE : OFF";cam.Parent=gui;corner(cam);stroke(cam)
 
 -- Familiar tycoon navigation rail
