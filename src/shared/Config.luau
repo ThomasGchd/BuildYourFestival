@@ -1,7 +1,7 @@
 local Config = {}
 Config.StartCash = 300
 Config.PlotCount = 8
-Config.MaxStageLevel = 25
+Config.MaxStageLevel = 40
 Config.MainstageProductId = 0 -- Replace with the real Developer Product ID before publishing
 Config.StageUpgradeCosts = {50,120,250,500,900,1500,2500,4000}
 Config.Branches = {
@@ -17,12 +17,12 @@ Config.Branches = {
 Config.PrestigeBaseCost = 250000
 Config.TycoonPhases = {
  {name="DEPART",need=0},
- {name="PETITE SOIREE",need=5},
- {name="PETITE SCENE",need=15},
- {name="SCENE LOCALE",need=35},
- {name="FESTIVAL",need=70},
- {name="GROS FESTIVAL",need=120},
- {name="MEGA FESTIVAL",need=190},
+ {name="PETITE SOIREE",need=6},
+ {name="PETITE SCENE",need=20},
+ {name="SCENE LOCALE",need=50},
+ {name="FESTIVAL",need=100},
+ {name="GROS FESTIVAL",need=180},
+ {name="MEGA FESTIVAL",need=300},
 }
 
 -- Creator Store music. Keep this list curated: arbitrary user audio IDs are never accepted.
