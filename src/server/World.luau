@@ -29,13 +29,13 @@ local function truss(parent,pos,height)
 end
 function M.build(Config)
  local old=workspace:FindFirstChild("FestivalWorld");if old then old:Destroy() end
- Lighting.ClockTime=18.65;Lighting.Brightness=2.25;Lighting.Ambient=Color3.fromRGB(72,78,105);Lighting.OutdoorAmbient=Color3.fromRGB(105,110,140);Lighting.EnvironmentDiffuseScale=.45;Lighting.EnvironmentSpecularScale=.8
+ Lighting.ClockTime=17.65;Lighting.Brightness=3;Lighting.ExposureCompensation=.35;Lighting.Ambient=Color3.fromRGB(125,120,145);Lighting.OutdoorAmbient=Color3.fromRGB(150,145,165);Lighting.EnvironmentDiffuseScale=.65;Lighting.EnvironmentSpecularScale=.7
  local sky=Lighting:FindFirstChild("FestivalSky") or Instance.new("Sky");sky.Name="FestivalSky";sky.CelestialBodiesShown=true;sky.StarCount=3000;sky.SunAngularSize=14;sky.MoonAngularSize=10;sky.Parent=Lighting
  pcall(function() local clouds=workspace.Terrain:FindFirstChild("FestivalClouds") or Instance.new("Clouds");clouds.Name="FestivalClouds";clouds.Cover=.32;clouds.Density=.38;clouds.Color=Color3.fromRGB(225,215,235);clouds.Parent=workspace.Terrain end)
  local bloom=Lighting:FindFirstChild("FestivalBloom") or Instance.new("BloomEffect");bloom.Name="FestivalBloom";bloom.Intensity=.28;bloom.Size=18;bloom.Threshold=1.65;bloom.Parent=Lighting
- local cc=Lighting:FindFirstChild("FestivalColor") or Instance.new("ColorCorrectionEffect");cc.Name="FestivalColor";cc.Brightness=.015;cc.Contrast=.08;cc.Saturation=.08;cc.TintColor=Color3.fromRGB(235,240,255);cc.Parent=Lighting
+ local cc=Lighting:FindFirstChild("FestivalColor") or Instance.new("ColorCorrectionEffect");cc.Name="FestivalColor";cc.Brightness=.06;cc.Contrast=.03;cc.Saturation=.04;cc.TintColor=Color3.fromRGB(255,235,225);cc.Parent=Lighting
  local rays=Lighting:FindFirstChild("FestivalRays") or Instance.new("SunRaysEffect");rays.Name="FestivalRays";rays.Intensity=.025;rays.Spread=.65;rays.Parent=Lighting
- local atmosphere=Lighting:FindFirstChild("FestivalAtmosphere") or Instance.new("Atmosphere");atmosphere.Name="FestivalAtmosphere";atmosphere.Density=.22;atmosphere.Haze=1.05;atmosphere.Glare=.12;atmosphere.Color=Color3.fromRGB(190,205,255);atmosphere.Decay=Color3.fromRGB(255,150,115);atmosphere.Parent=Lighting
+ local atmosphere=Lighting:FindFirstChild("FestivalAtmosphere") or Instance.new("Atmosphere");atmosphere.Name="FestivalAtmosphere";atmosphere.Density=.12;atmosphere.Haze=.35;atmosphere.Glare=.08;atmosphere.Color=Color3.fromRGB(205,210,235);atmosphere.Decay=Color3.fromRGB(255,175,135);atmosphere.Parent=Lighting
  local root=Instance.new("Folder");root.Name="FestivalWorld";root.Parent=workspace
  -- Remove the default Roblox baseplate/spawn so nothing shows through our floor.
  -- Keep any Studio baseplate untouched; FestivalWorld fully covers its playable area.
