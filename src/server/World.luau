@@ -97,14 +97,49 @@ function M.build(Config)
  -- FOH
  part(root,"FOH",Vector3.new(32,3,22),CFrame.new(0,1.5,-340),Color3.fromRGB(30,31,36),Enum.Material.Metal)
  textSign(root,Vector3.new(0,5,-328.5),Vector3.new(20,4,.5),"FOH")
- -- crowd markers
+ -- animated festival crowd: lightweight R15-ish silhouettes with individual dance phases
  local crowd=Instance.new("Folder");crowd.Name="Crowd";crowd.Parent=root
- for row=1,8 do for col=-7,7 do
-  if math.abs(col)>1 or row>2 then
-   local body=part(crowd,"FestivalGoer",Vector3.new(1.5,3.5,1.2),CFrame.new(col*10,1.75,-385-row*9),Color3.fromHSV(((row*15+col)%100)/100,.55,.9),Enum.Material.SmoothPlastic);body.CanCollide=false
-   local head=part(crowd,"Head",Vector3.new(1.5,1.5,1.5),CFrame.new(col*10,4.2,-385-row*9),Color3.fromRGB(224,180,145));head.Shape=Enum.PartType.Ball;head.CanCollide=false
+ local dancers={}
+ local skinTones={Color3.fromRGB(246,210,175),Color3.fromRGB(213,160,118),Color3.fromRGB(151,101,72),Color3.fromRGB(91,62,48)}
+ local shirts={Color3.fromRGB(28,29,34),Color3.fromRGB(235,67,94),Color3.fromRGB(64,150,255),Color3.fromRGB(122,71,210),Color3.fromRGB(35,185,126),Color3.fromRGB(235,170,48)}
+ local function dancer(x,z,index)
+  local model=Instance.new("Model");model.Name="Dancer";model.Parent=crowd
+  local skin=skinTones[index%#skinTones+1];local shirt=shirts[index%#shirts+1]
+  local torso=part(model,"Torso",Vector3.new(1.8,2.4,1),CFrame.new(x,3,z),shirt,Enum.Material.SmoothPlastic);torso.CanCollide=false;model.PrimaryPart=torso
+  local head=part(model,"Head",Vector3.new(1.45,1.45,1.45),CFrame.new(x,5,z),skin);head.Shape=Enum.PartType.Ball;head.CanCollide=false
+  local legL=part(model,"LegL",Vector3.new(.65,2.2,.7),CFrame.new(x-.45,1.2,z),Color3.fromRGB(25,27,33));legL.CanCollide=false
+  local legR=part(model,"LegR",Vector3.new(.65,2.2,.7),CFrame.new(x+.45,1.2,z),Color3.fromRGB(25,27,33));legR.CanCollide=false
+  local armL=part(model,"ArmL",Vector3.new(.55,2.3,.55),CFrame.new(x-1.2,3.1,z),skin);armL.CanCollide=false
+  local armR=part(model,"ArmR",Vector3.new(.55,2.3,.55),CFrame.new(x+1.2,3.1,z),skin);armR.CanCollide=false
+  table.insert(dancers,{model=model,base=Vector3.new(x,0,z),phase=index*.73,torso=torso,head=head,armL=armL,armR=armR,legL=legL,legR=legR})
+ end
+ local n=0
+ for row=1,10 do
+  for col=-9,9 do
+   if math.abs(col)>1 or row>3 then
+    n+=1
+    local jitterX=((n*37)%11-5)*.42;local jitterZ=((n*23)%9-4)*.38
+    dancer(col*9+jitterX,-382-row*8+jitterZ,n)
+   end
   end
- end end
+ end
+ task.spawn(function()
+  local RunService=game:GetService("RunService");local t=0
+  RunService.Heartbeat:Connect(function(dt)
+   t+=dt;local energy=math.clamp((sound.PlaybackLoudness or 0)/450,0,1);local amp=.45+energy*.9
+   for i,d in ipairs(dancers) do
+    local beat=t*3.2+d.phase;local bounce=math.abs(math.sin(beat))*amp
+    local sway=math.sin(beat*.72)*.22
+    d.torso.CFrame=CFrame.new(d.base+Vector3.new(sway,3+bounce,0))*CFrame.Angles(0,math.sin(beat*.35)*.12,math.sin(beat)*.06)
+    d.head.CFrame=CFrame.new(d.base+Vector3.new(sway,5+bounce,0))
+    local handsUp=(i%4==0) and 1 or 0
+    d.armL.CFrame=CFrame.new(d.base+Vector3.new(-1.15,3.15+bounce+handsUp*.8,0))*CFrame.Angles(0,0,math.rad(-18-55*math.sin(beat)))
+    d.armR.CFrame=CFrame.new(d.base+Vector3.new(1.15,3.15+bounce+handsUp*.8,0))*CFrame.Angles(0,0,math.rad(18+55*math.sin(beat+.8)))
+    d.legL.CFrame=CFrame.new(d.base+Vector3.new(-.43,1.2,0))
+    d.legR.CFrame=CFrame.new(d.base+Vector3.new(.43,1.2,0))
+   end
+  end)
+ end)
  -- laser rig
  local fx=Instance.new("Folder");fx.Name="FX";fx.Parent=stage
  for i=1,28 do
