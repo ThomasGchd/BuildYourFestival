@@ -9,6 +9,13 @@ local styles={
  Hard={label="HARD STAGE",main=Color3.fromRGB(24,25,29),accent=Color3.fromRGB(235,45,58),secondary=Color3.fromRGB(245,245,245)},
  Beach={label="BEACH",main=Color3.fromRGB(54,65,67),accent=Color3.fromRGB(50,205,220),secondary=Color3.fromRGB(255,190,80)}
 }
+local palettes={
+ Purple={Color3.fromRGB(116,88,235),Color3.fromRGB(55,205,225)},Red={Color3.fromRGB(235,55,65),Color3.fromRGB(255,145,55)},
+ Green={Color3.fromRGB(65,210,135),Color3.fromRGB(245,205,70)},Blue={Color3.fromRGB(55,135,245),Color3.fromRGB(80,225,235)},
+ Pink={Color3.fromRGB(235,75,180),Color3.fromRGB(135,90,245)},Mono={Color3.fromRGB(235,238,242),Color3.fromRGB(120,125,135)}
+}
+local festivalNames={NOVA=true,PULSE=true,ECLIPSE=true,RAVE=true,IMPACT=true,HORIZON=true,VOID=true,UNITY=true}
+local decorModes={Clean=true,Industrial=true,Festive=true}
 local function getPlot(world,i)return world.plots:FindFirstChild("Plot"..i)end
 local function part(parent,name,size,pos,color,material)
  local x=Instance.new("Part");x.Name=name;x.Size=size;x.Position=pos;x.Anchored=true;x.Color=color;x.Material=material or Enum.Material.Metal;x.Parent=parent;return x
@@ -71,7 +78,8 @@ end
 local function buildStage(plot,player)
  local old=plot:FindFirstChild("PlayerBuild");if old then old:Destroy()end
  local f=Instance.new("Folder");f.Name="PlayerBuild";f.Parent=plot
- local styleKey=player:GetAttribute("StageStyle")or"Mainstage";local s=styles[styleKey]or styles.Mainstage;local pos=plot.Floor.Position
+ local styleKey=player:GetAttribute("StageStyle")or"Mainstage";local baseStyle=styles[styleKey]or styles.Mainstage
+ local palette=palettes[player:GetAttribute("FestivalPalette")or"Purple"];local s={main=baseStyle.main,accent=palette and palette[1]or baseStyle.accent,secondary=palette and palette[2]or baseStyle.secondary};local pos=plot.Floor.Position
  local stage=branchLevel(player,"Stage");local sound=branchLevel(player,"Sound");local lights=branchLevel(player,"Lights");local fx=branchLevel(player,"FX");local crowd=branchLevel(player,"Crowd");local stands=branchLevel(player,"Stands")
  local tier=math.floor(stage/5);local prestige=player:GetAttribute("Prestige")or 0
  local function sign(text,offset,size)
@@ -246,10 +254,15 @@ local function buildStage(plot,player)
  if stage>=2 or lights>=2 then
   for i=0,10 do local t=i/10;local x=-42+t*84;local bulb=part(f,"PlotFestoon",Vector3.new(.4,.4,.4),pos+Vector3.new(x,12-math.sin(t*math.pi)*2,36),Color3.fromRGB(255,198,125),Enum.Material.Neon);bulb.Shape=Enum.PartType.Ball;bulb.CanCollide=false end
  end
+ if (player:GetAttribute("DecorMode")or"Festive")=="Industrial" and stage>=2 then
+  for _,x in ipairs({-56,56})do part(f,"IndustrialTotem",Vector3.new(3,15,3),pos+Vector3.new(x,7.5,30),Color3.fromRGB(54,57,62),Enum.Material.DiamondPlate)end
+ elseif (player:GetAttribute("DecorMode")or"Festive")=="Clean" and stage>=2 then
+  for _,x in ipairs({-54,54})do part(f,"CleanTotem",Vector3.new(2,10,2),pos+Vector3.new(x,5,32),s.accent,Enum.Material.SmoothPlastic)end
+ end
  if crowd>=3 then
   for _,x in ipairs({-52,52})do local pole=part(f,"FestivalFlagPole",Vector3.new(.35,12,.35),pos+Vector3.new(x,6,35),Color3.fromRGB(72,74,80),Enum.Material.Metal);local flag=part(f,"FestivalFlag",Vector3.new(4,2.6,.18),pos+Vector3.new(x+(x<0 and 2 or -2),10.5,35),x<0 and s.accent or s.secondary,Enum.Material.Fabric);flag.CanCollide=false end
  end
- if marketing>=1 then sign("TON FESTIVAL",Vector3.new(0,5,45),Vector3.new(30,4,.6))end
+ if marketing>=1 then sign(player:GetAttribute("FestivalName")or"NOVA",Vector3.new(0,5,45),Vector3.new(30,4,.6))end
  if marketing>=4 then for _,x in ipairs({-48,48})do part(f,"BannerPole",Vector3.new(1,12,1),pos+Vector3.new(x,6,43),Color3.fromRGB(55,57,62),Enum.Material.Metal);part(f,"Banner",Vector3.new(7,8,.35),pos+Vector3.new(x,8,42.4),s.accent,Enum.Material.Fabric)end end
  if marketing>=8 then part(f,"FestivalGateway",Vector3.new(86,3,3),pos+Vector3.new(0,17,47),Color3.fromRGB(42,44,50),Enum.Material.Metal);for _,x in ipairs({-41,41})do part(f,"GatewayPost",Vector3.new(3,18,3),pos+Vector3.new(x,9,47),Color3.fromRGB(42,44,50),Enum.Material.Metal)end;sign("WELCOME",Vector3.new(0,15.2,46.2),Vector3.new(28,4,.6))end
  if staff>=1 then part(f,"CrewDesk",Vector3.new(12,4,6),pos+Vector3.new(-68,2,37),Color3.fromRGB(35,38,44),Enum.Material.Metal);sign("CREW",Vector3.new(-68,6,34),Vector3.new(10,2.5,.5))end
@@ -259,7 +272,8 @@ end
 function M.assign(player,world,Config)
  if player:GetAttribute("PlotIndex")then return end
  for i=1,Config.PlotCount do if not owners[i]then
-  owners[i]=player;player:SetAttribute("PlotIndex",i);player:SetAttribute("Cash",Config.StartCash);player:SetAttribute("Fans",0);player:SetAttribute("StageStyle","Mainstage");player:SetAttribute("Prestige",0);player:SetAttribute("RebirthTokens",0);player:SetAttribute("DJCombo",0);player:SetAttribute("TutorialStep",1);player:SetAttribute("EventActive",false);player:SetAttribute("EventHype",0);player:SetAttribute("EventTime",0);player:SetAttribute("LastEventPayout",0);player:SetAttribute("LastEventFans",0);player:SetAttribute("ActivityScore",0);player:SetAttribute("LastActivity",0)
+  owners[i]=player;player:SetAttribute("PlotIndex",i);player:SetAttribute("Cash",Config.StartCash);player:SetAttribute("Fans",0);player:SetAttribute("StageStyle","Mainstage")
+  player:SetAttribute("FestivalPalette","Purple");player:SetAttribute("FestivalName","NOVA");player:SetAttribute("DecorMode","Festive");player:SetAttribute("Prestige",0);player:SetAttribute("RebirthTokens",0);player:SetAttribute("DJCombo",0);player:SetAttribute("TutorialStep",1);player:SetAttribute("EventActive",false);player:SetAttribute("EventHype",0);player:SetAttribute("EventTime",0);player:SetAttribute("LastEventPayout",0);player:SetAttribute("LastEventFans",0);player:SetAttribute("ActivityScore",0);player:SetAttribute("LastActivity",0)
   for key in pairs(Config.Branches)do player:SetAttribute(key.."Level",0)end
   local plot=getPlot(world,i);do
    local ownerSign=plot:FindFirstChild("OwnerSign")
@@ -318,6 +332,12 @@ function M.assign(player,world,Config)
      if ts==2 and key=="Stage" then pp:SetAttribute("TutorialStep",3) elseif ts==3 and key=="Crowd" then pp:SetAttribute("TutorialStep",4) end
      local pi=pp:GetAttribute("PlotIndex");local target=pi and getPlot(world,pi);if target then buildStage(target,pp) end
     elseif action=="STYLE" and styles[key] then pp:SetAttribute("StageStyle",key);local pi=pp:GetAttribute("PlotIndex");local target=pi and getPlot(world,pi);if target then buildStage(target,pp) end
+    elseif action=="CUSTOMIZE" then
+     local kind=tostring(key);local value=tostring(select(1,...))
+     if kind=="PALETTE" and palettes[value]then pp:SetAttribute("FestivalPalette",value)
+     elseif kind=="NAME" and festivalNames[value]then pp:SetAttribute("FestivalName",value)
+     elseif kind=="DECOR" and decorModes[value]then pp:SetAttribute("DecorMode",value)else return end
+     local pi=pp:GetAttribute("PlotIndex");local target=pi and getPlot(world,pi);if target then buildStage(target,pp)end
     elseif action=="REBIRTH" then
      local prestige=pp:GetAttribute("Prestige")or 0;local price=Config.PrestigeBaseCost*(prestige+1)^2;if (pp:GetAttribute("Cash")or 0)<price then return end
      pp:SetAttribute("Cash",Config.StartCash);pp:SetAttribute("Prestige",prestige+1);pp:SetAttribute("RebirthTokens",(pp:GetAttribute("RebirthTokens")or 0)+1+math.floor(prestige/3));for k in pairs(Config.Branches)do pp:SetAttribute(k.."Level",0)end
