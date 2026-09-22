@@ -17,74 +17,75 @@ local function buildStage(plot,player)
  local s=styles[player:GetAttribute("StageStyle")] or styles.Neon;local pos=plot.Floor.Position
  local stage=branchLevel(player,"Stage");local sound=branchLevel(player,"Sound");local lights=branchLevel(player,"Lights");local fx=branchLevel(player,"FX");local crowd=branchLevel(player,"Crowd");local stands=branchLevel(player,"Stands")
  local tier=math.floor(stage/5);local prestige=player:GetAttribute("Prestige")or 0
- local function zoneSign(text,at,width)
-  local board=part(f,"ZoneSign",Vector3.new(width or 22,4,.7),pos+at,Color3.fromRGB(22,25,31),Enum.Material.Metal)
+ local function sign(text,offset,size)
+  local board=part(f,"Sign",size or Vector3.new(24,4,.6),pos+offset,Color3.fromRGB(20,23,29),Enum.Material.Metal)
   local g=Instance.new("SurfaceGui");g.Face=Enum.NormalId.Front;g.Parent=board
   local t=Instance.new("TextLabel");t.Size=UDim2.fromScale(1,1);t.BackgroundTransparency=1;t.Text=text;t.TextColor3=Color3.new(1,1,1);t.Font=Enum.Font.GothamBold;t.TextScaled=true;t.Parent=g
  end
- zoneSign("VOTRE FESTIVAL",Vector3.new(0,7,51),36)
- zoneSign("SCENE & DJ",Vector3.new(0,9,-43),24)
- zoneSign("AMELIORATIONS",Vector3.new(-54,5,46),24)
- -- Festival identity grows with progression.
- if prestige>0 then
-  local monument=part(f,"RebirthMonument",Vector3.new(5,10+math.min(prestige,10)*1.5,5),pos+Vector3.new(0,5,43),s.accent,Enum.Material.Neon)
-  local light=Instance.new("PointLight");light.Brightness=.6;light.Range=18;light.Color=s.accent;light.Parent=monument
- end
- part(f,"Stage",Vector3.new(48+math.min(stage,20)*3,2,30+tier*4),pos+Vector3.new(0,1,-30),s.main)
- -- architectural depth: apron, stairs and side wings
- part(f,"StageApron",Vector3.new(34+math.min(stage,15)*2,1.2,8),pos+Vector3.new(0,1.6,-10),Color3.fromRGB(30,32,38),Enum.Material.Metal)
- for n=1,3 do part(f,"Step",Vector3.new(18+n*5,.65,3),pos+Vector3.new(0,.35+n*.32,-5-n*2.6),Color3.fromRGB(50,52,59),Enum.Material.Metal)end
- if stage>=3 then for _,x in ipairs({-1,1})do part(f,"Wing",Vector3.new(10+tier*2,10+tier*2,18),pos+Vector3.new(x*(31+tier*4),5+tier,-31),s.main,Enum.Material.Metal)end end
- local ledFrame=part(f,"LEDFrame",Vector3.new(42+math.min(stage,20)*2.4,15+math.min(stage,15),2),pos+Vector3.new(0,10+math.min(stage,15)*.45,-45),Color3.fromRGB(17,19,25),Enum.Material.Metal)
- local led=part(f,"LED",Vector3.new(36+math.min(stage,20)*2.2,10+math.min(stage,12)*.65,.55),pos+Vector3.new(0,10+math.min(stage,12)*.35,-43.9),Color3.fromRGB(35,75,105),Enum.Material.SmoothPlastic)
- for x=-1,1,2 do part(f,"LEDStrip",Vector3.new(.7,12+math.min(stage,10),1),pos+Vector3.new(x*(22+math.min(stage,15)*1.1),10,-43.5),s.accent,Enum.Material.Neon)end
- local booth=part(f,"DJBooth",Vector3.new(14+tier*2,4,5),pos+Vector3.new(0,4,-20),Color3.fromRGB(20,21,26))
- -- Playable deck: simple performance controls directly on the personal stage.
- local deck=part(f,"DJDeck",Vector3.new(10,1,3.5),pos+Vector3.new(0,6.2,-18.8),Color3.fromRGB(10,11,14),Enum.Material.SmoothPlastic)
- for _,x in ipairs({-3.2,3.2})do local jog=part(f,"JogWheel",Vector3.new(2.4,.35,2.4),pos+Vector3.new(x,6.85,-18.8),Color3.fromRGB(55,58,65),Enum.Material.Metal);jog.Shape=Enum.PartType.Cylinder;jog.Orientation=Vector3.new(0,0,90)end
+
+ -- The slot starts almost empty: one DJ table, decks and a cable case.
+ local booth=part(f,"DJTable",Vector3.new(12,4,4.5),pos+Vector3.new(0,2,-27),Color3.fromRGB(28,30,35),Enum.Material.Metal)
+ local deck=part(f,"DJDeck",Vector3.new(9,.8,3),pos+Vector3.new(0,4.4,-26.5),Color3.fromRGB(12,13,16),Enum.Material.SmoothPlastic)
+ for _,x in ipairs({-2.7,2.7})do local jog=part(f,"JogWheel",Vector3.new(2,.3,2),pos+Vector3.new(x,4.95,-26.5),Color3.fromRGB(70,72,78),Enum.Material.Metal);jog.Shape=Enum.PartType.Cylinder;jog.Orientation=Vector3.new(0,0,90)end
+ part(f,"FlightCase",Vector3.new(5,3,4),pos+Vector3.new(10,1.5,-27),Color3.fromRGB(45,47,52),Enum.Material.DiamondPlate)
+ sign("DJ",Vector3.new(0,7,-29),Vector3.new(10,2.5,.5))
  local deckPrompt=Instance.new("ProximityPrompt");deckPrompt.ActionText="MIXER";deckPrompt.ObjectText="PLATINES DJ";deckPrompt.RequiresLineOfSight=false;deckPrompt.MaxActivationDistance=10;deckPrompt.Parent=deck
  deckPrompt.Triggered:Connect(function(pp)
   if pp~=player then return end
-  local combo=(pp:GetAttribute("DJCombo")or 0)+1;pp:SetAttribute("DJCombo",combo)
-  pp:SetAttribute("Cash",(pp:GetAttribute("Cash")or 0)+20+combo*3);pp:SetAttribute("Fans",(pp:GetAttribute("Fans")or 0)+5+math.floor(combo/3))
-  deckPrompt.ObjectText="PLATINES DJ • COMBO x"..combo
-  task.delay(4,function()if pp.Parent then pp:SetAttribute("DJCombo",0);if deckPrompt.Parent then deckPrompt.ObjectText="PLATINES DJ" end end end)
+  local combo=(pp:GetAttribute("DJCombo")or 0)+1;pp:SetAttribute("DJCombo",combo);pp:SetAttribute("Cash",(pp:GetAttribute("Cash")or 0)+20+combo*3);pp:SetAttribute("Fans",(pp:GetAttribute("Fans")or 0)+5+math.floor(combo/3));deckPrompt.ObjectText="PLATINES DJ • COMBO x"..combo
+  task.delay(4,function()if pp.Parent then pp:SetAttribute("DJCombo",0);if deckPrompt.Parent then deckPrompt.ObjectText="PLATINES DJ"end end end)
  end)
- if stage>=5 then
-  part(f,"Roof",Vector3.new(78+tier*6,3,34),pos+Vector3.new(0,27+tier,-31),Color3.fromRGB(23,24,29))
-  for _,x in ipairs({-34-tier*2,34+tier*2})do for _,z in ipairs({-43,-20})do part(f,"StageTruss",Vector3.new(2,26+tier,2),pos+Vector3.new(x,13+tier*.5,z),Color3.fromRGB(75,78,84),Enum.Material.DiamondPlate)end end
+
+ -- Stage branch constructs a real venue around the original booth.
+ if stage>=1 then part(f,"StageDeck",Vector3.new(38,2,22),pos+Vector3.new(0,1,-29),Color3.fromRGB(35,37,42),Enum.Material.Metal)end
+ if stage>=2 then
+  for n=1,3 do part(f,"Step",Vector3.new(14+n*5,.55,2.8),pos+Vector3.new(0,.3+n*.3,-15-n*2.5),Color3.fromRGB(62,64,70),Enum.Material.Metal)end
+  part(f,"FrontApron",Vector3.new(46,1.2,6),pos+Vector3.new(0,1.2,-15),Color3.fromRGB(25,27,32),Enum.Material.Metal)
  end
- if stage>=10 then for _,x in ipairs({-44,44})do part(f,"Tower",Vector3.new(4,28+tier*3,4),pos+Vector3.new(x,14,-31),Color3.fromRGB(28,30,35),Enum.Material.DiamondPlate)end end
- if stage>=20 then part(f,"Crown",Vector3.new(100,4,5),pos+Vector3.new(0,36,-33),s.accent,Enum.Material.Neon)end
- for i=1,math.min(sound,8)do local side=i%2==0 and 1 or -1;local row=math.ceil(i/2);part(f,"Speaker",Vector3.new(6,10,5),pos+Vector3.new(side*(38+row*5),5,-18),Color3.fromRGB(12,13,16))end
- for i=1,math.min(lights,12)do local x=-44+(i-1)*(88/11);local l=part(f,"Fixture",Vector3.new(1.5,1.5,1.5),pos+Vector3.new(x,22+(i%2)*4,-25),s.secondary,Enum.Material.SmoothPlastic);local sp=Instance.new("SpotLight");sp.Range=35+lights;sp.Angle=30;sp.Brightness=math.min(1.8,0.45+lights*.04);sp.Color=s.secondary;sp.Face=Enum.NormalId.Front;sp.Parent=l end
- for i=1,math.min(fx,8)do local x=-35+(i-1)*10;local h=part(f,"Laser",Vector3.new(.8,.8,.8),pos+Vector3.new(x,24,-20),s.accent,Enum.Material.Neon);local a=Instance.new("Attachment");a.Parent=h;local t=part(f,"LaserTarget",Vector3.new(.1,.1,.1),pos+Vector3.new(x*1.4,2,25+(i%3)*8),s.accent);t.Transparency=1;t.CanCollide=false;local b=Instance.new("Attachment");b.Parent=t;local beam=Instance.new("Beam");beam.Attachment0=a;beam.Attachment1=b;beam.Width0=.15;beam.Width1=.03;beam.Color=ColorSequence.new(s.accent);beam.LightEmission=1;beam.FaceCamera=true;beam.Parent=h end
- -- Real mini-festival layout: entrance -> audience floor -> FOH -> stage.
- local dance=part(f,"DanceFloor",Vector3.new(105,.18,48),pos+Vector3.new(0,.62,15),Color3.fromRGB(31,34,40),Enum.Material.Slate);dance.CanCollide=false
- part(f,"CenterPath",Vector3.new(16,.2,94),pos+Vector3.new(0,.64,4),Color3.fromRGB(66,68,73),Enum.Material.Concrete).CanCollide=false
- local foh=part(f,"LocalFOH",Vector3.new(18,4,10),pos+Vector3.new(0,2,30),Color3.fromRGB(24,26,31),Enum.Material.Metal)
- for _,x in ipairs({-45,45})do
-  for z=-2,34,18 do
-   local pole=part(f,"AreaLightPole",Vector3.new(.7,10,.7),pos+Vector3.new(x,5,z),Color3.fromRGB(45,47,53),Enum.Material.Metal)
-   local lamp=part(f,"AreaLamp",Vector3.new(2.2,.5,2.2),pos+Vector3.new(x,10,z),s.secondary,Enum.Material.Neon)
-   local pl=Instance.new("PointLight");pl.Brightness=.18;pl.Range=11;pl.Color=s.secondary;pl.Parent=lamp
+ if stage>=3 then for _,x in ipairs({-25,25})do part(f,"StageWing",Vector3.new(10,10,22),pos+Vector3.new(x,5,-29),Color3.fromRGB(30,32,37),Enum.Material.Metal)end end
+ if stage>=4 then
+  for _,x in ipairs({-30,30})do for _,z in ipairs({-39,-19})do part(f,"VerticalTruss",Vector3.new(2,24,2),pos+Vector3.new(x,12,z),Color3.fromRGB(88,90,96),Enum.Material.DiamondPlate)end end
+  part(f,"TopTruss",Vector3.new(62,2,2),pos+Vector3.new(0,24,-39),Color3.fromRGB(88,90,96),Enum.Material.DiamondPlate)
+ end
+ if stage>=5 then part(f,"Roof",Vector3.new(70,3,30),pos+Vector3.new(0,26,-29),Color3.fromRGB(22,24,29),Enum.Material.Metal)end
+ if stage>=7 then
+  local frame=part(f,"ScreenFrame",Vector3.new(40,16,2),pos+Vector3.new(0,14,-40),Color3.fromRGB(15,17,21),Enum.Material.Metal)
+  part(f,"StageScreen",Vector3.new(35,11,.5),pos+Vector3.new(0,14,-38.9),Color3.fromRGB(38,55,75),Enum.Material.SmoothPlastic)
+ end
+ if stage>=10 then for _,x in ipairs({-40,40})do part(f,"OuterTower",Vector3.new(4,31,4),pos+Vector3.new(x,15.5,-29),Color3.fromRGB(52,55,61),Enum.Material.DiamondPlate)end end
+ if stage>=15 then part(f,"MegaRoof",Vector3.new(96,4,38),pos+Vector3.new(0,34,-29),Color3.fromRGB(18,20,25),Enum.Material.Metal)end
+ if stage>=20 then for _,x in ipairs({-48,48})do part(f,"SideScreen",Vector3.new(15,20,2),pos+Vector3.new(x,18,-34),Color3.fromRGB(28,42,58),Enum.Material.SmoothPlastic)end end
+ if stage>=25 then part(f,"FestivalCrown",Vector3.new(105,5,5),pos+Vector3.new(0,40,-31),s.accent,Enum.Material.SmoothPlastic)end
+
+ -- Sound is its own visible progression: no speakers at the beginning.
+ for i=1,math.min(sound,12)do
+  local side=i%2==0 and 1 or -1;local row=math.ceil(i/2);local x=side*(18+math.min(row,3)*7);local y=5+math.floor((row-1)/3)*10
+  part(f,"Speaker",Vector3.new(6,9,5),pos+Vector3.new(x,y,-17),Color3.fromRGB(11,12,15),Enum.Material.SmoothPlastic)
+ end
+ if sound>=10 then for _,x in ipairs({-36,36})do part(f,"SubStack",Vector3.new(12,8,8),pos+Vector3.new(x,4,-15),Color3.fromRGB(9,10,12),Enum.Material.SmoothPlastic)end end
+
+ -- Lighting starts only after buying it; fixtures attach to the stage rather than floating around the field.
+ if lights>0 then
+  local count=math.min(lights,10)
+  for i=1,count do
+   local x=-27+(i-1)*(54/math.max(1,count-1));local y=stage>=5 and 23 or 9
+   local lamp=part(f,"StageLight",Vector3.new(1.5,1.5,2),pos+Vector3.new(x,y,-18),Color3.fromRGB(35,37,43),Enum.Material.Metal)
+   local sp=Instance.new("SpotLight");sp.Range=38;sp.Angle=34;sp.Brightness=.45;sp.Color=s.secondary;sp.Face=Enum.NormalId.Front;sp.Parent=lamp
   end
  end
- for _,x in ipairs({-62,62})do part(f,"SidePath",Vector3.new(12,.15,90),pos+Vector3.new(x,.61,3),Color3.fromRGB(58,60,64),Enum.Material.Concrete).CanCollide=false end
- -- perimeter dressing makes a developed slot feel like a real mini-festival
- if stage>=2 then
-  for _,x in ipairs({-78,78})do for z=-42,35,14 do part(f,"Fence",Vector3.new(1.2,3,11),pos+Vector3.new(x,1.5,z),Color3.fromRGB(90,93,100),Enum.Material.Metal)end end
+ if fx>=5 and stage>=5 then
+  for i=1,math.min(4,math.floor(fx/5))do local x=-24+(i-1)*16;local head=part(f,"FXHead",Vector3.new(1.2,1.2,1.2),pos+Vector3.new(x,23,-20),Color3.fromRGB(30,32,38),Enum.Material.Metal);local a=Instance.new("Attachment");a.Parent=head;local target=part(f,"FXTarget",Vector3.new(.1,.1,.1),pos+Vector3.new(x*1.4,3,20),s.accent);target.Transparency=1;target.CanCollide=false;local b=Instance.new("Attachment");b.Parent=target;local beam=Instance.new("Beam");beam.Attachment0=a;beam.Attachment1=b;beam.Width0=.06;beam.Width1=.015;beam.Color=ColorSequence.new(s.accent);beam.LightEmission=.6;beam.FaceCamera=true;beam.Enabled=false;beam.Parent=head end
  end
- if crowd>=5 then
-  part(f,"EntryArch",Vector3.new(65,2,2),pos+Vector3.new(0,12,50),s.accent,Enum.Material.Neon)
-  for _,x in ipairs({-31,31})do part(f,"EntryPost",Vector3.new(2,12,2),pos+Vector3.new(x,6,50),Color3.fromRGB(45,47,54),Enum.Material.Metal)end
+
+ -- Grounds stay readable and functional, without glowing blocks.
+ if crowd>=1 then part(f,"DanceFloor",Vector3.new(100,.16,42),pos+Vector3.new(0,.61,13),Color3.fromRGB(45,47,52),Enum.Material.Slate).CanCollide=false end
+ if crowd>=4 then for _,x in ipairs({-42,42})do for z=-2,28,15 do part(f,"Barrier",Vector3.new(1,2.5,11),pos+Vector3.new(x,1.25,z),Color3.fromRGB(105,108,113),Enum.Material.Metal)end end end
+ if crowd>=8 then for _,x in ipairs({-31,31})do part(f,"EntryPost",Vector3.new(2,12,2),pos+Vector3.new(x,6,48),Color3.fromRGB(50,52,58),Enum.Material.Metal)end;part(f,"EntryArch",Vector3.new(64,2,2),pos+Vector3.new(0,12,48),Color3.fromRGB(50,52,58),Enum.Material.Metal);sign("ENTREE FESTIVAL",Vector3.new(0,10.5,47.2),Vector3.new(28,3,.5))end
+ if stands>=1 then
+  for i=1,math.min(stands,6)do local side=i%2==0 and 1 or -1;local row=math.ceil(i/2);local vendor=part(f,"Vendor",Vector3.new(15,7,10),pos+Vector3.new(side*67,3.5,30-row*16),Color3.fromRGB(42,44,50),Enum.Material.Metal);local g=Instance.new("SurfaceGui");g.Face=Enum.NormalId.Front;g.Parent=vendor;local t=Instance.new("TextLabel");t.Size=UDim2.fromScale(1,1);t.BackgroundTransparency=1;local names={"BAR","FOOD","MERCH","VIP","TOKENS","INFO"};t.Text=names[i]or"STAND";t.TextColor3=Color3.new(1,1,1);t.Font=Enum.Font.GothamBold;t.TextScaled=true;t.Parent=g end
  end
- if branchLevel(player,"Marketing")>=5 then part(f,"FestivalBanner",Vector3.new(50,8,1),pos+Vector3.new(0,8,47),s.secondary,Enum.Material.Neon) end
- if branchLevel(player,"Staff")>=5 then
-  for _,x in ipairs({-72,72})do part(f,"StaffTent",Vector3.new(16,7,12),pos+Vector3.new(x,3.5,-3),Color3.fromRGB(35,38,45),Enum.Material.Fabric)end
- end
- for i=1,math.min(crowd,12)do local x=-48+((i-1)%6)*19;local z=8+math.floor((i-1)/6)*14;part(f,"Barrier",Vector3.new(14,2,.5),pos+Vector3.new(x,1,z),Color3.fromRGB(105,108,115),Enum.Material.Metal)end
- for i=1,math.min(stands,6)do local side=i%2==0 and 1 or -1;local row=math.ceil(i/2);local b=part(f,"Vendor",Vector3.new(14,7,10),pos+Vector3.new(side*68,3.5,30-row*16),i%2==0 and s.accent or s.secondary,Enum.Material.SmoothPlastic);local sg=Instance.new("SurfaceGui");sg.Face=Enum.NormalId.Front;sg.Parent=b;local tx=Instance.new("TextLabel");tx.Size=UDim2.fromScale(1,1);tx.BackgroundTransparency=1;local vendorNames={"BAR","FOOD","MERCH","VIP","TOKENS","INFO"};tx.Text=vendorNames[i] or "STAND";tx.TextScaled=true;tx.TextColor3=Color3.new(1,1,1);tx.Font=Enum.Font.GothamBold;tx.Parent=sg end
+ if branchLevel(player,"Staff")>=5 then for _,x in ipairs({-70,70})do part(f,"StaffTent",Vector3.new(16,7,12),pos+Vector3.new(x,3.5,-5),Color3.fromRGB(38,40,45),Enum.Material.Fabric)end end
+ if prestige>0 then local mon=part(f,"RebirthMonument",Vector3.new(4,8+math.min(prestige,10),4),pos+Vector3.new(0,4,42),s.accent,Enum.Material.SmoothPlastic);local light=Instance.new("PointLight");light.Brightness=.25;light.Range=10;light.Color=s.accent;light.Parent=mon end
 end
 local function pad(plot,name,offset,color,callback)
  local p=part(plot,name,Vector3.new(5,4,3),plot.Floor.Position+offset+Vector3.new(0,2,0),Color3.fromRGB(25,28,34),Enum.Material.Metal)
