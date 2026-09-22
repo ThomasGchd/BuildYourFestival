@@ -21,6 +21,31 @@ local function person(parent,pos,index)
  for _,x in ipairs({-.43,.43})do local leg=part(m,"Leg",Vector3.new(.58,2,.65),pos+Vector3.new(x,1.05,0),Color3.fromRGB(25,27,32));leg.CanCollide=false end
  for _,x in ipairs({-1.05,1.05})do local arm=part(m,"Arm",Vector3.new(.48,2,.48),pos+Vector3.new(x,3.05,0),skin);arm.CanCollide=false end
 end
+local function clearEventCrowd(plot)
+ local old=plot:FindFirstChild("EventCrowd");if old then old:Destroy()end
+end
+local function spawnEventCrowd(plot,player)
+ clearEventCrowd(plot)
+ local folder=Instance.new("Folder");folder.Name="EventCrowd";folder.Parent=plot
+ local pos=plot.Floor.Position;local side=pos.X>0 and 1 or -1
+ local wanted=math.min(22,8+math.floor(branchLevel(player,"Crowd")*.8)+math.floor(branchLevel(player,"Marketing")*.5))
+ local TweenService=game:GetService("TweenService")
+ task.spawn(function()
+  for i=1,wanted do
+   if not player.Parent or not player:GetAttribute("EventActive") or not folder.Parent then break end
+   local z=pos.Z-4+((i*17)%49);local start=Vector3.new(pos.X-side*82,.1,z)
+   person(folder,start,i)
+   local model=folder:GetChildren()[#folder:GetChildren()]
+   local dx=((i*23)%65)-32;local dz=((i*31)%30)-4;local target=pos+Vector3.new(dx,.1,dz)
+   if model and model:IsA("Model") then
+    for _,v in model:GetChildren()do if v:IsA("BasePart")then
+     local offset=v.Position-start;TweenService:Create(v,TweenInfo.new(1.8+(i%4)*.22,Enum.EasingStyle.Linear),{Position=target+offset}):Play()
+    end end
+   end
+   task.wait(.28)
+  end
+ end)
+end
 local function buildStage(plot,player)
  local old=plot:FindFirstChild("PlayerBuild");if old then old:Destroy()end
  local f=Instance.new("Folder");f.Name="PlayerBuild";f.Parent=plot
@@ -136,6 +161,12 @@ local function buildStage(plot,player)
   end
  end
  if branchLevel(player,"Staff")>=5 then for _,x in ipairs({-70,70})do part(f,"StaffTent",Vector3.new(16,7,12),pos+Vector3.new(x,3.5,-5),Color3.fromRGB(38,40,45),Enum.Material.Fabric)end end
+ local marketing=branchLevel(player,"Marketing");local staff=branchLevel(player,"Staff")
+ if marketing>=1 then sign("TON FESTIVAL",Vector3.new(0,5,45),Vector3.new(30,4,.6))end
+ if marketing>=4 then for _,x in ipairs({-48,48})do part(f,"BannerPole",Vector3.new(1,12,1),pos+Vector3.new(x,6,43),Color3.fromRGB(55,57,62),Enum.Material.Metal);part(f,"Banner",Vector3.new(7,8,.35),pos+Vector3.new(x,8,42.4),s.accent,Enum.Material.Fabric)end end
+ if marketing>=8 then part(f,"FestivalGateway",Vector3.new(86,3,3),pos+Vector3.new(0,17,47),Color3.fromRGB(42,44,50),Enum.Material.Metal);for _,x in ipairs({-41,41})do part(f,"GatewayPost",Vector3.new(3,18,3),pos+Vector3.new(x,9,47),Color3.fromRGB(42,44,50),Enum.Material.Metal)end;sign("WELCOME",Vector3.new(0,15.2,46.2),Vector3.new(28,4,.6))end
+ if staff>=1 then part(f,"CrewDesk",Vector3.new(12,4,6),pos+Vector3.new(-68,2,37),Color3.fromRGB(35,38,44),Enum.Material.Metal);sign("CREW",Vector3.new(-68,6,34),Vector3.new(10,2.5,.5))end
+ if staff>=4 then part(f,"SecurityCabin",Vector3.new(14,8,10),pos+Vector3.new(68,4,38),Color3.fromRGB(40,43,48),Enum.Material.Metal);sign("SECURITE",Vector3.new(68,7.5,32.7),Vector3.new(11,2.3,.5))end
  if prestige>0 then local mon=part(f,"RebirthMonument",Vector3.new(4,8+math.min(prestige,10),4),pos+Vector3.new(0,4,42),s.accent,Enum.Material.SmoothPlastic);local light=Instance.new("PointLight");light.Brightness=.25;light.Range=10;light.Color=s.accent;light.Parent=mon end
 end
 function M.assign(player,world,Config)
@@ -169,10 +200,9 @@ function M.assign(player,world,Config)
      local rating=tonumber(key)or 0;rating=math.clamp(rating,0,3)
      pp:SetAttribute("EventHype",math.min(100,(pp:GetAttribute("EventHype")or 0)+({0,3,7,12})[rating+1]))
      if rating>=2 then pp:SetAttribute("DJCombo",(pp:GetAttribute("DJCombo")or 0)+1) else pp:SetAttribute("DJCombo",0) end
-     if (pp:GetAttribute("TutorialStep")or 1)==4 then pp:SetAttribute("TutorialStep",5) end
     elseif action=="START_EVENT" then
      if pp:GetAttribute("EventActive") then return end
-     if (pp:GetAttribute("TutorialStep")or 1)==1 then pp:SetAttribute("TutorialStep",2) end;local eventLength=45+math.min(45,math.floor((branchLevel(pp,"Stage")+branchLevel(pp,"Crowd"))/8)*5);pp:SetAttribute("EventActive",true);pp:SetAttribute("EventHype",45);pp:SetAttribute("EventTime",eventLength);pp:SetAttribute("EventVisitors",math.max(8,12+branchLevel(pp,"Crowd")*3+branchLevel(pp,"Marketing")*2))
+     local tutorial=pp:GetAttribute("TutorialStep")or 1;if tutorial==1 then pp:SetAttribute("TutorialStep",2) elseif tutorial==4 then pp:SetAttribute("TutorialStep",5) end;local eventLength=45+math.min(45,math.floor((branchLevel(pp,"Stage")+branchLevel(pp,"Crowd"))/8)*5);pp:SetAttribute("EventActive",true);pp:SetAttribute("EventHype",45);pp:SetAttribute("EventTime",eventLength);pp:SetAttribute("EventVisitors",math.max(8,12+branchLevel(pp,"Crowd")*3+branchLevel(pp,"Marketing")*2));local pi=pp:GetAttribute("PlotIndex");local eventPlot=pi and getPlot(world,pi);if eventPlot then spawnEventCrowd(eventPlot,pp)end
      task.spawn(function()
       for remaining=(pp:GetAttribute("EventTime")or 45),1,-1 do
        if not pp.Parent then return end
@@ -184,9 +214,10 @@ function M.assign(player,world,Config)
       end
       local hype=pp:GetAttribute("EventHype")or 0;local crowdLv=branchLevel(pp,"Crowd");local standsLv=branchLevel(pp,"Stands")
       local stageLv=branchLevel(pp,"Stage");local soundLv=branchLevel(pp,"Sound");local marketingLv=branchLevel(pp,"Marketing");local staffLv=branchLevel(pp,"Staff");local baseEvent=190+stageLv*20+soundLv*15+crowdLv*17+standsLv*28+marketingLv*18+staffLv*12;local payout=math.floor(baseEvent*(.9+hype/500));local gainedFans=math.floor(12+crowdLv*3+marketingLv*3+hype*.12)
-      pp:SetAttribute("Cash",(pp:GetAttribute("Cash")or 0)+payout);pp:SetAttribute("Fans",(pp:GetAttribute("Fans")or 0)+gainedFans);pp:SetAttribute("LastEventPayout",payout);pp:SetAttribute("LastEventFans",gainedFans);pp:SetAttribute("EventActive",false);pp:SetAttribute("EventTime",0);pp:SetAttribute("EventVisitors",0)
+      pp:SetAttribute("Cash",(pp:GetAttribute("Cash")or 0)+payout);pp:SetAttribute("Fans",(pp:GetAttribute("Fans")or 0)+gainedFans);pp:SetAttribute("LastEventPayout",payout);pp:SetAttribute("LastEventFans",gainedFans);pp:SetAttribute("EventActive",false);pp:SetAttribute("EventTime",0);pp:SetAttribute("EventVisitors",0);if eventPlot then clearEventCrowd(eventPlot)end
      end)
     elseif action=="BUY" and Config.Branches[key] then
+     if pp:GetAttribute("EventActive") then return end
      local lv=branchLevel(pp,key);local branch=Config.Branches[key];if lv>=branch.max then return end
      local price=cost(Config,key,lv);local cash=pp:GetAttribute("Cash")or 0;if cash<price then return end
      pp:SetAttribute("Cash",cash-price);pp:SetAttribute(key.."Level",lv+1);pp:SetAttribute("Fans",(pp:GetAttribute("Fans")or 0)+10+(lv+1)*5)
@@ -224,7 +255,7 @@ function M.start(world,Config)
   local phase=Config.TycoonPhases[1].name;local nextNeed=nil
   for _,info in ipairs(Config.TycoonPhases)do if total>=info.need then phase=info.name else nextNeed=info.need;break end end
   p:SetAttribute("FestivalPhase",phase);p:SetAttribute("IncomePerTick",income);p:SetAttribute("NextPhaseNeed",nextNeed or -1)
-  p:SetAttribute("Cash",(p:GetAttribute("Cash")or 0)+math.max(1,math.floor(income*.025)))
+  -- Cash comes from festivals; the loop is active rather than AFK.
  end end end)
 end
 return M
