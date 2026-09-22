@@ -34,8 +34,8 @@ function M.build(Config)
  local atmosphere=Lighting:FindFirstChild("FestivalAtmosphere") or Instance.new("Atmosphere");atmosphere.Name="FestivalAtmosphere";atmosphere.Density=.22;atmosphere.Haze=1.2;atmosphere.Parent=Lighting
  local root=Instance.new("Folder");root.Name="FestivalWorld";root.Parent=workspace
  part(root,"Ground",Vector3.new(650,2,900),CFrame.new(0,-1,-100),Color3.fromRGB(42,86,48),Enum.Material.Grass)
- part(root,"Festival Avenue",Vector3.new(82,.6,650),CFrame.new(0,.1,-70),Color3.fromRGB(57,58,65),Enum.Material.Asphalt)
- part(root,"Mainstage Plaza",Vector3.new(330,.6,170),CFrame.new(0,.12,-430),Color3.fromRGB(49,50,57),Enum.Material.Concrete)
+ part(root,"Festival Avenue",Vector3.new(82,.6,650),CFrame.new(0,.36,-70),Color3.fromRGB(57,58,65),Enum.Material.Asphalt)
+ part(root,"Mainstage Plaza",Vector3.new(330,.6,170),CFrame.new(0,.38,-430),Color3.fromRGB(49,50,57),Enum.Material.Concrete)
  -- entrance
  for _,x in ipairs({-43,43}) do truss(root,Vector3.new(x,0,250),32) end
  part(root,"EntranceTop",Vector3.new(88,3,3),CFrame.new(0,31,250),Color3.fromRGB(35,37,43),Enum.Material.Metal)
@@ -57,7 +57,7 @@ function M.build(Config)
  for row=0,3 do for _,side in ipairs({-1,1}) do
   local i=row*2+(side==1 and 2 or 1);local model=Instance.new("Model");model.Name="Plot"..i;model:SetAttribute("Index",i);model.Parent=plots
   local z=135-row*115;local x=side*155
-  local floor=part(model,"Floor",Vector3.new(135,.7,96),CFrame.new(x,.2,z),Color3.fromRGB(53,96,57),Enum.Material.Grass);model.PrimaryPart=floor
+  local floor=part(model,"Floor",Vector3.new(135,.7,96),CFrame.new(x,.42,z),Color3.fromRGB(53,96,57),Enum.Material.Grass);model.PrimaryPart=floor
   -- subtle plot trim instead of colored blocks
   for _,dz in ipairs({-47,47}) do part(model,"Trim",Vector3.new(136,.35,1),CFrame.new(x,.55,z+dz),Color3.fromRGB(90,92,98),Enum.Material.Metal) end
   for _,dx in ipairs({-67,67}) do part(model,"Trim",Vector3.new(1,.35,95),CFrame.new(x+dx,.55,z),Color3.fromRGB(90,92,98),Enum.Material.Metal) end
