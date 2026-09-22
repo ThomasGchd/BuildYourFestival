@@ -61,6 +61,37 @@ local upgradesButton
 upgradesButton=navButton("AMELIORATIONS",Color3.fromRGB(255,95,130),function() end)
 
 local upgradeRemote=ReplicatedStorage:WaitForChild("FestivalUpgrade")
+local djGui=nil;local djRunning=false;local target=.5;local dir=1;local cursorPos=0
+local function closeDJ()djRunning=false;if djGui then djGui:Destroy();djGui=nil end end
+local function openDJ()
+ if djGui or not p:GetAttribute("EventActive") then return end
+ djRunning=true;cursorPos=0;dir=1;target=.2+math.random()*.6
+ djGui=Instance.new("Frame");djGui.Size=UDim2.fromOffset(560,190);djGui.Position=UDim2.new(.5,-280,1,-285);djGui.BackgroundColor3=Color3.fromRGB(12,15,22);djGui.Parent=gui;corner(djGui,16);stroke(djGui)
+ local title=Instance.new("TextLabel");title.Size=UDim2.new(1,-24,0,42);title.Position=UDim2.fromOffset(12,4);title.BackgroundTransparency=1;title.Text="TRANSITION DJ  •  SPACE / CLIC AU BON MOMENT";title.TextColor3=Color3.new(1,1,1);title.Font=Enum.Font.GothamBold;title.TextSize=15;title.Parent=djGui
+ local track=Instance.new("Frame");track.Size=UDim2.new(1,-48,0,38);track.Position=UDim2.fromOffset(24,58);track.BackgroundColor3=Color3.fromRGB(34,39,52);track.Parent=djGui;corner(track,10)
+ local zone=Instance.new("Frame");zone.Size=UDim2.new(.16,0,1,0);zone.Position=UDim2.new(target-.08,0,0,0);zone.BackgroundColor3=Color3.fromRGB(70,190,125);zone.Parent=track;corner(zone,8)
+ local perfect=Instance.new("Frame");perfect.Size=UDim2.new(.055,0,1,0);perfect.Position=UDim2.new(.4725,0,0,0);perfect.BackgroundColor3=Color3.fromRGB(245,205,75);perfect.Parent=zone;corner(perfect,6)
+ local cursor=Instance.new("Frame");cursor.Size=UDim2.fromOffset(8,50);cursor.AnchorPoint=Vector2.new(.5,.5);cursor.Position=UDim2.new(0,0,.5,0);cursor.BackgroundColor3=Color3.new(1,1,1);cursor.Parent=track;corner(cursor,4)
+ local result=Instance.new("TextLabel");result.Size=UDim2.new(1,-24,0,35);result.Position=UDim2.fromOffset(12,108);result.BackgroundTransparency=1;result.Text="Synchronise la transition";result.TextColor3=Color3.fromRGB(210,215,225);result.Font=Enum.Font.GothamBold;result.TextSize=14;result.Parent=djGui
+ local hit=Instance.new("TextButton");hit.Size=UDim2.new(1,-48,0,34);hit.Position=UDim2.fromOffset(24,146);hit.Text="DROP / TRANSITION";hit.BackgroundColor3=Color3.fromRGB(92,64,220);hit.TextColor3=Color3.new(1,1,1);hit.Font=Enum.Font.GothamBold;hit.Parent=djGui;corner(hit,9)
+ local locked=false
+ local function attempt()
+  if locked then return end;locked=true
+  local d=math.abs(cursorPos-target);local rating=0
+  if d<=.035 then rating=3;result.Text="PERFECT  •  HYPE +12"
+  elseif d<=.08 then rating=2;result.Text="GOOD  •  HYPE +7"
+  elseif d<=.15 then rating=1;result.Text="OK  •  HYPE +3"
+  else result.Text="RATE  •  COMBO PERDU" end
+  upgradeRemote:FireServer("DJ_HIT",rating)
+  task.delay(.55,function()if not djGui then return end;target=.16+math.random()*.68;zone.Position=UDim2.new(target-.08,0,0,0);locked=false end)
+ end
+ hit.MouseButton1Click:Connect(attempt)
+ local UIS=game:GetService("UserInputService");local conn
+ conn=UIS.InputBegan:Connect(function(input,gp)if not gp and input.KeyCode==Enum.KeyCode.Space and djGui then attempt()end end)
+ djGui.Destroying:Connect(function()if conn then conn:Disconnect()end end)
+ task.spawn(function()while djRunning and djGui do cursorPos+=dir*.012;if cursorPos>=1 then cursorPos=1;dir=-1 elseif cursorPos<=0 then cursorPos=0;dir=1 end;cursor.Position=UDim2.new(cursorPos,0,.5,0);RunService.RenderStepped:Wait()end end)
+end
+
 local launch=Instance.new("TextButton");launch.Size=UDim2.fromOffset(250,54);launch.Position=UDim2.new(.5,-125,1,-122);launch.BackgroundColor3=Color3.fromRGB(92,64,220);launch.TextColor3=Color3.new(1,1,1);launch.Font=Enum.Font.GothamBlack;launch.TextSize=16;launch.Text="LANCER MON FESTIVAL";launch.Parent=gui;corner(launch,14);stroke(launch)
 local eventBar=Instance.new("Frame");eventBar.Size=UDim2.fromOffset(360,70);eventBar.Position=UDim2.new(.5,-180,0,142);eventBar.BackgroundColor3=Color3.fromRGB(13,16,23);eventBar.Visible=false;eventBar.Parent=gui;corner(eventBar,14);stroke(eventBar)
 local eventText=Instance.new("TextLabel");eventText.Size=UDim2.new(1,-20,0,30);eventText.Position=UDim2.fromOffset(10,5);eventText.BackgroundTransparency=1;eventText.TextColor3=Color3.new(1,1,1);eventText.Font=Enum.Font.GothamBold;eventText.TextSize=14;eventText.Parent=eventBar
@@ -79,6 +110,8 @@ rebirthButton.MouseButton1Click:Connect(function()
  local prestige=p:GetAttribute("Prestige")or 0;local price=250000*((prestige+1)^2)
  if (p:GetAttribute("Cash")or 0)>=price then upgradeRemote:FireServer("REBIRTH") else objective.Text="RENAISSANCE • Il faut $"..price end
 end)
+upgradeRemote.OnClientEvent:Connect(function(action)if action=="DJ_OPEN" then openDJ()end end)
+p:GetAttributeChangedSignal("EventActive"):Connect(function()if not p:GetAttribute("EventActive") then closeDJ()end end)
 local upgradePanel
 local branchNames={Stage="SCENE",Sound="SON",Lights="ECLAIRAGE",FX="EFFETS",Crowd="PUBLIC",Stands="STANDS",Marketing="MARKETING",Staff="EQUIPE"}
 local branchOrder={"Stage","Sound","Lights","FX","Crowd","Stands","Marketing","Staff"}
