@@ -32,7 +32,7 @@ local function buildStage(plot,player)
  local deckPrompt=Instance.new("ProximityPrompt");deckPrompt.ActionText="MIXER";deckPrompt.ObjectText="PLATINES DJ";deckPrompt.RequiresLineOfSight=false;deckPrompt.MaxActivationDistance=10;deckPrompt.Parent=deck
  deckPrompt.Triggered:Connect(function(pp)
   if pp~=player then return end
-  local combo=(pp:GetAttribute("DJCombo")or 0)+1;pp:SetAttribute("DJCombo",combo);pp:SetAttribute("Cash",(pp:GetAttribute("Cash")or 0)+20+combo*3);pp:SetAttribute("Fans",(pp:GetAttribute("Fans")or 0)+5+math.floor(combo/3));deckPrompt.ObjectText="PLATINES DJ • COMBO x"..combo
+  local combo=(pp:GetAttribute("DJCombo")or 0)+1;pp:SetAttribute("DJCombo",combo);pp:SetAttribute("Cash",(pp:GetAttribute("Cash")or 0)+20+combo*3);pp:SetAttribute("Fans",(pp:GetAttribute("Fans")or 0)+5+math.floor(combo/3));if (pp:GetAttribute("TutorialStep")or 1)==4 then pp:SetAttribute("TutorialStep",5) end;deckPrompt.ObjectText="PLATINES DJ • COMBO x"..combo
   task.delay(4,function()if pp.Parent then pp:SetAttribute("DJCombo",0);if deckPrompt.Parent then deckPrompt.ObjectText="PLATINES DJ"end end end)
  end)
 
@@ -98,7 +98,7 @@ end
 function M.assign(player,world,Config)
  if player:GetAttribute("PlotIndex")then return end
  for i=1,Config.PlotCount do if not owners[i]then
-  owners[i]=player;player:SetAttribute("PlotIndex",i);player:SetAttribute("Cash",Config.StartCash);player:SetAttribute("Fans",0);player:SetAttribute("StageStyle","Neon");player:SetAttribute("Prestige",0);player:SetAttribute("RebirthTokens",0);player:SetAttribute("DJCombo",0)
+  owners[i]=player;player:SetAttribute("PlotIndex",i);player:SetAttribute("Cash",Config.StartCash);player:SetAttribute("Fans",0);player:SetAttribute("StageStyle","Neon");player:SetAttribute("Prestige",0);player:SetAttribute("RebirthTokens",0);player:SetAttribute("DJCombo",0);player:SetAttribute("TutorialStep",1)
   for key in pairs(Config.Branches)do player:SetAttribute(key.."Level",0)end
   local plot=getPlot(world,i);plot.OwnerSign.OwnerGui.Text.Text=player.DisplayName.." • FESTIVAL";buildStage(plot,player)
   local order={"Stage","Sound","Lights","FX","Crowd","Stands","Marketing","Staff"}
@@ -109,7 +109,12 @@ function M.assign(player,world,Config)
    _padPart,pr=pad(plot,"Upgrade"..key,Vector3.new(-55+col*36,.55,40-row*15),styles.Neon.accent,function(pp)
     if pp~=player then return end;local lv=branchLevel(pp,key);local b=Config.Branches[key];if lv>=b.max then return end
     local price=cost(Config,key,lv);local cash=pp:GetAttribute("Cash")or 0;if cash<price then return end
-    pp:SetAttribute("Cash",cash-price);pp:SetAttribute(key.."Level",lv+1);pp:SetAttribute("Fans",(pp:GetAttribute("Fans")or 0)+10+(lv+1)*5);refreshPrompt(pr,Config,key,pp);buildStage(plot,pp)
+    pp:SetAttribute("Cash",cash-price);pp:SetAttribute(key.."Level",lv+1);pp:SetAttribute("Fans",(pp:GetAttribute("Fans")or 0)+10+(lv+1)*5)
+    local ts=pp:GetAttribute("TutorialStep")or 1
+    if ts==1 and key=="Sound" then pp:SetAttribute("TutorialStep",2)
+    elseif ts==2 and key=="Stage" then pp:SetAttribute("TutorialStep",3)
+    elseif ts==3 and key=="Crowd" then pp:SetAttribute("TutorialStep",4) end
+    refreshPrompt(pr,Config,key,pp);buildStage(plot,pp)
    end);refreshPrompt(pr,Config,key,player)
   end
   for n,style in ipairs({"Neon","Industrial","Nature"})do local _,pr=pad(plot,"Style"..style,Vector3.new(-35+(n-1)*18,.55,-2),styles[style].accent,function(pp)if pp~=player then return end;pp:SetAttribute("StageStyle",style);buildStage(plot,pp)end);pr.ActionText="CHOISIR";pr.ObjectText="STYLE • "..string.upper(style)end
