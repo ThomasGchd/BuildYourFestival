@@ -182,6 +182,28 @@ end
 music.OnClientEvent:Connect(function(action,a,b,c)if action=="OPEN"then open(a,b)elseif action=="NOW"then now.Text="MAINSTAGE  •  "..a.."  •  "..b.."  •  file "..c end end)
 local function refresh()stats.Text="$"..tostring(p:GetAttribute("Cash")or 0).."   •   "..tostring(p:GetAttribute("Fans")or 0).." FANS   •   "..totalProgress().." AMELIORATIONS   •   R"..tostring(p:GetAttribute("Prestige")or 0).."   •   TOKENS "..tostring(p:GetAttribute("RebirthTokens")or 0)end
 for _,a in ipairs({"Cash","Fans","Prestige","RebirthTokens","StageLevel","SoundLevel","LightsLevel","FXLevel","CrowdLevel","StandsLevel","MarketingLevel","StaffLevel"})do p:GetAttributeChangedSignal(a):Connect(refresh)end;refresh()
+-- Free dance: social emote usable anywhere on the festival grounds.
+local freeDance=Instance.new("TextButton");freeDance.Name="FreeDanceButton";freeDance.Size=UDim2.fromOffset(122,42);freeDance.Position=UDim2.new(1,-140,1,-62);freeDance.BackgroundColor3=Color3.fromRGB(22,27,38);freeDance.TextColor3=Color3.new(1,1,1);freeDance.Font=Enum.Font.GothamBold;freeDance.TextSize=13;freeDance.Text="💃 DANSER";freeDance.Parent=gui;corner(freeDance,11);stroke(freeDance)
+local dancing=false;local danceConn=nil;local danceBase=nil
+local function stopFreeDance()
+ dancing=false;freeDance.Text="💃 DANSER"
+ if danceConn then danceConn:Disconnect();danceConn=nil end
+ local char=p.Character;local root=char and char:FindFirstChild("HumanoidRootPart")
+ if root and danceBase then root.CFrame=CFrame.new(root.Position)*CFrame.Angles(0,danceBase,0)end
+end
+local function startFreeDance()
+ if dancing then stopFreeDance();return end
+ local char=p.Character;local hum=char and char:FindFirstChildOfClass("Humanoid");local root=char and char:FindFirstChild("HumanoidRootPart");if not hum or not root then return end
+ dancing=true;freeDance.Text="■ ARRÊTER";local _,yaw,_=root.CFrame:ToOrientation();danceBase=yaw;local t=0
+ danceConn=RunService.RenderStepped:Connect(function(dt)
+  if not dancing or not root.Parent then stopFreeDance();return end
+  if hum.MoveDirection.Magnitude>.08 then stopFreeDance();return end
+  t+=dt;local bounce=math.abs(math.sin(t*5.4))*.18;root.CFrame=CFrame.new(root.Position+Vector3.new(0,bounce,0))*CFrame.Angles(0,danceBase+math.sin(t*2.6)*.22,math.sin(t*5.4)*.055)
+ end)
+end
+freeDance.MouseButton1Click:Connect(startFreeDance)
+p.CharacterAdded:Connect(function()if dancing then stopFreeDance()end end)
+
 local danceRemote=ReplicatedStorage:WaitForChild("DanceBattleRemote")
 local danceGui=nil;local danceRun=false
 local function closeDance()danceRun=false;if danceGui then danceGui:Destroy();danceGui=nil end end
