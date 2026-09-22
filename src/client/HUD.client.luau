@@ -18,7 +18,7 @@ objective.TextWrapped=true;objective.TextSize=14
 local function refreshObjective()
  local step=p:GetAttribute("TutorialStep")or 1
  local messages={
-  [1]="OBJECTIF  •  Achète ta première amélioration SON",
+  [1]="OBJECTIF  •  Lance ton premier festival dès maintenant !",
   [2]="OBJECTIF  •  Construis le premier niveau de ta SCÈNE",
   [3]="OBJECTIF  •  Débloque ton premier espace PUBLIC",
   [4]="OBJECTIF  •  Monte sur scène et utilise les PLATINES",
@@ -32,7 +32,7 @@ local phase=label(UDim2.new(.5,-190,0,88),UDim2.fromOffset(380,42),"")
 phase.TextSize=13
 local function refreshPhase()
  local name=p:GetAttribute("FestivalPhase")or"DEPART";local income=p:GetAttribute("IncomePerTick")or 0;local need=p:GetAttribute("NextPhaseNeed")or-1;local total=totalProgress()
- phase.Text=name.."   •   +$"..income.."/2s"..(need>0 and ("   •   PROCHAINE ETAPE "..total.."/"..need)or"   •   MAX")
+ phase.Text=name.."   •   PUISSANCE "..income..""..(need>0 and ("   •   PROCHAINE ETAPE "..total.."/"..need)or"   •   MAX")
 end
 for _,a in ipairs({"FestivalPhase","IncomePerTick","NextPhaseNeed","StageLevel","SoundLevel","LightsLevel","FXLevel","CrowdLevel","StandsLevel","MarketingLevel","StaffLevel"})do p:GetAttributeChangedSignal(a):Connect(refreshPhase)end;refreshPhase()
 local cam=Instance.new("TextButton");cam.Position=UDim2.new(0,18,1,-58);cam.Size=UDim2.fromOffset(185,40);cam.BackgroundColor3=Color3.fromRGB(12,15,22);cam.TextColor3=Color3.new(1,1,1);cam.Font=Enum.Font.GothamBold;cam.TextSize=13;cam.Text="CAMÉRA MUSICALE : OFF";cam.Parent=gui;corner(cam);stroke(cam)
@@ -61,6 +61,20 @@ local upgradesButton
 upgradesButton=navButton("AMELIORATIONS",Color3.fromRGB(255,95,130),function() end)
 
 local upgradeRemote=ReplicatedStorage:WaitForChild("FestivalUpgrade")
+local launch=Instance.new("TextButton");launch.Size=UDim2.fromOffset(250,54);launch.Position=UDim2.new(.5,-125,1,-122);launch.BackgroundColor3=Color3.fromRGB(92,64,220);launch.TextColor3=Color3.new(1,1,1);launch.Font=Enum.Font.GothamBlack;launch.TextSize=16;launch.Text="LANCER MON FESTIVAL";launch.Parent=gui;corner(launch,14);stroke(launch)
+local eventBar=Instance.new("Frame");eventBar.Size=UDim2.fromOffset(360,70);eventBar.Position=UDim2.new(.5,-180,0,142);eventBar.BackgroundColor3=Color3.fromRGB(13,16,23);eventBar.Visible=false;eventBar.Parent=gui;corner(eventBar,14);stroke(eventBar)
+local eventText=Instance.new("TextLabel");eventText.Size=UDim2.new(1,-20,0,30);eventText.Position=UDim2.fromOffset(10,5);eventText.BackgroundTransparency=1;eventText.TextColor3=Color3.new(1,1,1);eventText.Font=Enum.Font.GothamBold;eventText.TextSize=14;eventText.Parent=eventBar
+local hypeBack=Instance.new("Frame");hypeBack.Size=UDim2.new(1,-24,0,16);hypeBack.Position=UDim2.fromOffset(12,43);hypeBack.BackgroundColor3=Color3.fromRGB(35,39,50);hypeBack.Parent=eventBar;corner(hypeBack,8)
+local hypeFill=Instance.new("Frame");hypeFill.Size=UDim2.fromScale(.2,1);hypeFill.BackgroundColor3=Color3.fromRGB(105,90,235);hypeFill.Parent=hypeBack;corner(hypeFill,8)
+launch.MouseButton1Click:Connect(function()upgradeRemote:FireServer("START_EVENT")end)
+local function refreshEvent()
+ local active=p:GetAttribute("EventActive")==true;local hype=p:GetAttribute("EventHype")or 0;local time=p:GetAttribute("EventTime")or 0
+ eventBar.Visible=active;launch.Visible=not active
+ eventText.Text="FESTIVAL EN COURS  •  "..time.."s  •  HYPE "..hype.."%"
+ hypeFill.Size=UDim2.fromScale(math.clamp(hype/100,0,1),1)
+ if active then objective.Text="FAIS LE SHOW • Utilise les platines pour maintenir la HYPE !" end
+end
+for _,a in ipairs({"EventActive","EventHype","EventTime"})do p:GetAttributeChangedSignal(a):Connect(refreshEvent)end;refreshEvent()
 rebirthButton.MouseButton1Click:Connect(function()
  local prestige=p:GetAttribute("Prestige")or 0;local price=250000*((prestige+1)^2)
  if (p:GetAttribute("Cash")or 0)>=price then upgradeRemote:FireServer("REBIRTH") else objective.Text="RENAISSANCE • Il faut $"..price end
