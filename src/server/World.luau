@@ -33,10 +33,27 @@ function M.build(Config)
  local bloom=Lighting:FindFirstChild("FestivalBloom") or Instance.new("BloomEffect");bloom.Name="FestivalBloom";bloom.Intensity=.7;bloom.Size=30;bloom.Threshold=1.2;bloom.Parent=Lighting
  local atmosphere=Lighting:FindFirstChild("FestivalAtmosphere") or Instance.new("Atmosphere");atmosphere.Name="FestivalAtmosphere";atmosphere.Density=.22;atmosphere.Haze=1.2;atmosphere.Parent=Lighting
  local root=Instance.new("Folder");root.Name="FestivalWorld";root.Parent=workspace
+ -- Remove the default Roblox baseplate/spawn so nothing shows through our floor.
+ local baseplate=workspace:FindFirstChild("Baseplate");if baseplate then baseplate:Destroy() end
+ for _,v in workspace:GetChildren() do if v:IsA("SpawnLocation") and v.Parent~=root then v:Destroy() end end
  part(root,"Ground",Vector3.new(650,2,900),CFrame.new(0,-1.5,-100),Color3.fromRGB(42,86,48),Enum.Material.SmoothPlastic)
  part(root,"Festival Avenue",Vector3.new(82,1,650),CFrame.new(0,0,-70),Color3.fromRGB(57,58,65),Enum.Material.SmoothPlastic)
  part(root,"Mainstage Plaza",Vector3.new(330,1,170),CFrame.new(0,0,-430),Color3.fromRGB(49,50,57),Enum.Material.SmoothPlastic)
- -- entrance
+ -- Fast travel: two moving walkways along the avenue.
+ local conveyors=Instance.new("Folder");conveyors.Name="MovingWalkways";conveyors.Parent=root
+ local function walkway(name,x,direction)
+  local belt=part(conveyors,name,Vector3.new(12,1.15,610),CFrame.new(x,.58,-55),Color3.fromRGB(28,31,38),Enum.Material.SmoothPlastic)
+  belt.AssemblyLinearVelocity=Vector3.new(0,0,direction*34)
+  belt.CustomPhysicalProperties=PhysicalProperties.new(.7,.15,0,1,1)
+  for z=-340,225,18 do
+   local stripe=part(conveyors,"BeltStripe",Vector3.new(8,.08,2),CFrame.new(x,1.2,z),Color3.fromRGB(70,210,255),Enum.Material.Neon)
+   stripe.CanCollide=false
+  end
+  textSign(conveyors,Vector3.new(x,4,direction>0 and -350 or 240),Vector3.new(11,3,.5),direction>0 and "ENTREE >>" or "<< MAINSTAGE")
+ end
+ walkway("ToEntrance",-27,1)
+ walkway("ToMainstage",27,-1)
+
  for _,x in ipairs({-43,43}) do truss(root,Vector3.new(x,0,250),32) end
  part(root,"EntranceTop",Vector3.new(88,3,3),CFrame.new(0,31,250),Color3.fromRGB(35,37,43),Enum.Material.Metal)
  textSign(root,Vector3.new(0,25,248.3),Vector3.new(65,10,1),"BUILD YOUR FESTIVAL")
